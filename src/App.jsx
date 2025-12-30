@@ -245,9 +245,9 @@ function App() {
           onDecline={handleDeclineResume}
         />
       )}
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 theme-transition">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 theme-transition">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -271,7 +271,7 @@ function App() {
       {/* Avertissement backend non disponible */}
       {!backendAvailable && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 theme-transition">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 transition-colors duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex-1">
                 <div className="font-semibold text-red-800 dark:text-red-300 mb-2">⚠️ Backend non disponible</div>
@@ -287,7 +287,7 @@ function App() {
               </div>
               <button
                 onClick={checkDependencies}
-                className="w-full sm:w-auto px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 whitespace-nowrap theme-transition"
+                className="w-full sm:w-auto px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 whitespace-nowrap transition-colors duration-300"
               >
                 Réessayer
               </button>
@@ -299,7 +299,7 @@ function App() {
       {/* Status des dépendances */}
       {dependencies && backendAvailable && (
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className={`p-4 rounded-lg theme-transition ${
+          <div className={`p-4 rounded-lg transition-colors duration-300 ${
             dependencies.allInstalled 
               ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
               : 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800'
@@ -381,7 +381,7 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12 theme-transition">
+      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
           Extracteur DVD - Version 2.3 🌙
         </div>

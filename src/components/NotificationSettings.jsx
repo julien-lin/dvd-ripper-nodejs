@@ -49,7 +49,7 @@ const NotificationSettings = () => {
       {/* Bouton icône */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 hover:bg-gray-100 rounded-lg transition-colors relative"
+        className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:bg-gray-700 rounded-lg transition-colors relative"
         title="Paramètres de notifications"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +105,7 @@ const NotificationSettings = () => {
 
               {/* État de la permission */}
               <div className="border-t pt-4">
-                <div className="text-sm font-medium text-gray-700 mb-2">État</div>
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">État</div>
                 {permission === 'granted' && enabled && (
                   <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -132,7 +132,7 @@ const NotificationSettings = () => {
               {/* Fonctionnalités */}
               {enabled && permission === 'granted' && (
                 <div className="border-t pt-4">
-                  <div className="text-sm font-medium text-gray-700 mb-2">Fonctionnalités</div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fonctionnalités</div>
                   <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <li className="flex items-center gap-2">
                       <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">

@@ -49,7 +49,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6 theme-transition">
+    <div className="bg-white dark:bg-gray-800 dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6 transition-colors duration-300">
       <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 dark:text-gray-100">Configuration</h2>
 
       {/* Chemins */}
@@ -144,7 +144,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
             ))}
           </div>
           {selectedVts.length === 0 && (
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               Aucun titre sélectionné. Tous les titres seront convertis.
             </p>
           )}
@@ -156,7 +156,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Paramètres de qualité</h3>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Preset (vitesse)
           </label>
           <select
@@ -172,7 +172,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             CRF (qualité) - {config.videoCrf}
           </label>
           <input
@@ -184,7 +184,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
             className="w-full"
             disabled={isConverting}
           />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
             <span>18 (excellente)</span>
             <span>20 (très bonne)</span>
             <span>23 (bonne)</span>
@@ -192,7 +192,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Bitrate audio
           </label>
           <select

@@ -243,7 +243,7 @@ const ResumeModal = ({ onResume, onDecline }) => {
           <button
             onClick={handleDecline}
             disabled={loading}
-            className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 font-medium"
+            className="flex-1 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 font-medium"
           >
             Refuser (supprimer l'état)
           </button>

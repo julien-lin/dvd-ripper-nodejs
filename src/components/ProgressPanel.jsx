@@ -16,7 +16,7 @@ const ProgressPanel = ({ conversion, onStop }) => {
 
   if (!conversion) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center text-gray-500">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center text-gray-500 dark:text-gray-400">
         Aucune conversion en cours
       </div>
     );
@@ -127,7 +127,7 @@ const ProgressPanel = ({ conversion, onStop }) => {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowStopConfirm(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 transition-colors"
               >
                 Annuler
               </button>
@@ -172,10 +172,10 @@ const ProgressPanel = ({ conversion, onStop }) => {
       {/* Barre de progression globale */}
       <div>
         <div className="flex justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Progression globale</span>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Progression globale</span>
           <span className="text-sm text-gray-600 dark:text-gray-400">{Math.round(totalProgress)}%</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
           <div
             className="bg-blue-600 h-3 rounded-full transition-all duration-300"
             style={{ width: `${totalProgress}%` }}
@@ -204,7 +204,7 @@ const ProgressPanel = ({ conversion, onStop }) => {
                     <span className="text-xl">{getStatusIcon(item.status)}</span>
                     <div>
                       <span className="font-medium text-gray-800 dark:text-gray-100">VTS_{item.vts}</span>
-                      <div className="text-xs text-gray-500">{item.message}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{item.message}</div>
                     </div>
                   </div>
                   <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(item.status)}`}>
@@ -214,7 +214,7 @@ const ProgressPanel = ({ conversion, onStop }) => {
                 
                 {item.status === 'processing' && (
                   <div className="space-y-1">
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${Math.min(100, Math.max(0, item.progress || 0))}%` }}
@@ -238,7 +238,7 @@ const ProgressPanel = ({ conversion, onStop }) => {
                 )}
                 
                 {item.status === 'pending' && (
-                  <div className="text-xs text-gray-500 italic mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">
                     Ce titre sera traité prochainement...
                   </div>
                 )}
@@ -267,11 +267,11 @@ const ProgressPanel = ({ conversion, onStop }) => {
           className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm max-h-64 overflow-y-auto"
         >
           {logs.length === 0 ? (
-            <div className="text-gray-500">Aucun log pour le moment...</div>
+            <div className="text-gray-500 dark:text-gray-400">Aucun log pour le moment...</div>
           ) : (
             logs.map((log, index) => (
               <div key={index} className="mb-1">
-                <span className="text-gray-500">
+                <span className="text-gray-500 dark:text-gray-400">
                   {new Date(log.timestamp).toLocaleTimeString()}
                 </span>
                 <span className={`ml-2 ${getLogColor(log.level)}`}>
