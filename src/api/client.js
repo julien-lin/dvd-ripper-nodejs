@@ -213,6 +213,20 @@ export const dvdApi = {
   async analyzeResults(outputDir) {
     return apiClient.get('/analyze', { outputDir });
   },
+  
+  /**
+   * Obtenir l'état de reprise sauvegardé
+   */
+  async getResumeState() {
+    return apiClient.get('/resume-state');
+  },
+  
+  /**
+   * Effacer l'état de reprise sauvegardé
+   */
+  async clearResumeState() {
+    return apiClient.post('/clear-resume-state');
+  },
 };
 
 // Export par défaut
