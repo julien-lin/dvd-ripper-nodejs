@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import ConfigForm from './components/ConfigForm';
 import ProgressPanel from './components/ProgressPanel';
 import ResultsPanel from './components/ResultsPanel';
+import ResumeModal from './components/ResumeModal';
 import { POLLING_INTERVAL, debugLog } from './config';
 import dvdApi, { ApiError } from './api/client';
 import { useToast } from './components/common/ToastContainer';
@@ -28,6 +29,7 @@ function App() {
   const toast = useToast();
   const dispatch = useDispatch();
   const [usePolling, setUsePolling] = useState(false); // Fallback sur polling si WebSocket échoue
+  const [showResumeModal, setShowResumeModal] = useState(false);
   
   // Selectors Redux
   const dependencies = useSelector(selectDependencies);
@@ -60,6 +62,8 @@ function App() {
   useEffect(() => {
     checkDependencies();
     checkStatus();
+    // Vérifier s'il y a une conversion à reprendre
+    setShowResumeModal(true);
   }, []);
 
   // Fallback: Polling si WebSocket non connecté
@@ -154,7 +158,27 @@ function App() {
     }
   };
 
+  const handleResumeConversion = async () => {
+    setShowResumeModal(false);
+    // Rafraîchir le statut pour afficher la conversion reprise
+    await checkStatus();
+    toast.success('🔄 Conversion reprise avec succès !');
+  };
+
+  const handleDeclineResume = () => {
+    setShowResumeModal(false);
+    toast.info('État de conversion supprimé');
+  };
+
   return (
+    <>
+      {/* Modal de reprise de conversion */}
+      {showResumeModal && backendAvailable && (
+        <ResumeModal
+          onResume={handleResumeConversion}
+          onDecline={handleDeclineResume}
+        />
+      )}
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
@@ -282,6 +306,7 @@ function App() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
 
