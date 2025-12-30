@@ -158,11 +158,11 @@ function App() {
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-3xl font-bold text-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
             🎬 Extracteur DVD vers MP4
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             Interface conviviale pour convertir vos DVD en fichiers MP4
           </p>
         </div>
@@ -170,10 +170,10 @@ function App() {
 
       {/* Avertissement backend non disponible */}
       {!backendAvailable && (
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1">
                 <div className="font-semibold text-red-800 mb-2">⚠️ Backend non disponible</div>
                 <div className="text-sm text-red-700">
                   Le serveur backend n'est pas démarré ou n'est pas accessible sur le port 3001.
@@ -181,13 +181,13 @@ function App() {
                 <div className="text-sm text-red-600 mt-2">
                   Pour démarrer le backend, exécutez dans un terminal :
                 </div>
-                <code className="block mt-2 bg-red-100 px-3 py-2 rounded text-sm">
+                <code className="block mt-2 bg-red-100 px-3 py-2 rounded text-xs sm:text-sm overflow-x-auto">
                   cd server && npm start
                 </code>
               </div>
               <button
                 onClick={checkDependencies}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 whitespace-nowrap"
               >
                 Réessayer
               </button>
@@ -248,8 +248,8 @@ function App() {
       )}
 
       {/* Contenu principal */}
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Configuration */}
           <div>
             <ConfigForm

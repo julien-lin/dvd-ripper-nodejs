@@ -89,11 +89,11 @@ const FolderPicker = ({ value, onChange, label, placeholder, disabled }) => {
 
       {/* Modal de sélection */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-800">
+            <div className="p-3 sm:p-4 border-b flex items-center justify-between">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800">
                 Sélectionner un dossier
               </h3>
               <button
@@ -105,22 +105,24 @@ const FolderPicker = ({ value, onChange, label, placeholder, disabled }) => {
             </div>
 
             {/* Navigation */}
-            <div className="p-4 border-b bg-gray-50">
-              <div className="flex items-center gap-2 mb-2">
-                <button
-                  onClick={handleGoBack}
-                  disabled={pathHistory.length === 0}
-                  className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                >
-                  ← Retour
-                </button>
-                <button
-                  onClick={handleGoUp}
-                  disabled={currentPath === '/'}
-                  className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                >
-                  ↑ Parent
-                </button>
+            <div className="p-3 sm:p-4 border-b bg-gray-50">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2">
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleGoBack}
+                    disabled={pathHistory.length === 0}
+                    className="flex-1 sm:flex-none px-3 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  >
+                    ← Retour
+                  </button>
+                  <button
+                    onClick={handleGoUp}
+                    disabled={currentPath === '/'}
+                    className="flex-1 sm:flex-none px-3 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  >
+                    ↑ Parent
+                  </button>
+                </div>
                 <input
                   type="text"
                   value={currentPath}
@@ -130,12 +132,12 @@ const FolderPicker = ({ value, onChange, label, placeholder, disabled }) => {
                       loadDirectory(currentPath);
                     }
                   }}
-                  className="flex-1 px-3 py-1 border border-gray-300 rounded"
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded"
                   placeholder="Chemin du dossier"
                 />
                 <button
                   onClick={() => loadDirectory(currentPath)}
-                  className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="sm:flex-none px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
                   Aller
                 </button>

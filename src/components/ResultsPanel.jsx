@@ -26,30 +26,30 @@ const ResultsPanel = ({ conversion, outputDir }) => {
   const totalDuration = completedFiles.reduce((sum, file) => sum + (file.duration || 0), 0);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">
+    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
           Résultats en temps réel
         </h2>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-sm text-gray-600">Mise à jour automatique</span>
+          <span className="text-xs sm:text-sm text-gray-600">Mise à jour automatique</span>
         </div>
       </div>
 
       {/* Statistiques */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <div className="text-2xl font-bold text-blue-600">{completedFiles.length}</div>
-          <div className="text-sm text-gray-600">Fichiers terminés</div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+          <div className="text-xl sm:text-2xl font-bold text-blue-600">{completedFiles.length}</div>
+          <div className="text-xs sm:text-sm text-gray-600">Fichiers terminés</div>
         </div>
-        <div className="bg-green-50 p-4 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{formatBytes(totalSize)}</div>
-          <div className="text-sm text-gray-600">Taille totale</div>
+        <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+          <div className="text-xl sm:text-2xl font-bold text-green-600">{formatBytes(totalSize)}</div>
+          <div className="text-xs sm:text-sm text-gray-600">Taille totale</div>
         </div>
-        <div className="bg-purple-50 p-4 rounded-lg">
-          <div className="text-2xl font-bold text-purple-600">{formatDuration(totalDuration)}</div>
-          <div className="text-sm text-gray-600">Durée totale</div>
+        <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
+          <div className="text-xl sm:text-2xl font-bold text-purple-600">{formatDuration(totalDuration)}</div>
+          <div className="text-xs sm:text-sm text-gray-600">Durée totale</div>
         </div>
       </div>
 

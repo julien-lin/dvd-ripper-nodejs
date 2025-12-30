@@ -48,8 +48,8 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Configuration</h2>
+    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Configuration</h2>
 
       {/* Chemins */}
       <div className="space-y-4">
@@ -87,21 +87,21 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
       {/* Liste des VTS */}
       {vtsList.length > 0 && (
         <div className="border-t pt-4">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-semibold text-gray-800">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-3">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800">
               Titres disponibles ({vtsList.length})
             </h3>
-            <div className="space-x-2">
+            <div className="flex gap-2 text-sm">
               <button
                 onClick={selectAll}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="flex-1 sm:flex-none px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
                 disabled={isConverting}
               >
                 Tout sélectionner
               </button>
               <button
                 onClick={deselectAll}
-                className="text-sm text-gray-600 hover:text-gray-800"
+                className="flex-1 sm:flex-none px-3 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded"
                 disabled={isConverting}
               >
                 Tout désélectionner
