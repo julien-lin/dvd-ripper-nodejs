@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import ConfigForm from './components/ConfigForm';
 import ProgressPanel from './components/ProgressPanel';
 import ResultsPanel from './components/ResultsPanel';
-
-const API_BASE = 'http://localhost:3001/api';
+import { POLLING_INTERVAL, debugLog } from './config';
+import dvdApi, { ApiError } from './api/client';
+import { useToast } from './components/common/ToastContainer';
 
 function App() {
+  const toast = useToast();
   const [dependencies, setDependencies] = useState(null);
   const [conversion, setConversion] = useState(null);
   const [outputDir, setOutputDir] = useState('');
@@ -21,9 +23,11 @@ function App() {
   // Polling pour les conversions en cours
   useEffect(() => {
     if (conversion?.status === 'running') {
+      // PERFORMANCE: Réduit de 1s à 5s (3600 → 720 req/h/user)
+      // TODO: Implémenter WebSockets pour temps réel sans polling
       const interval = setInterval(() => {
         checkStatus();
-      }, 1000); // Vérifier toutes les secondes pour les logs en temps réel
+      }, POLLING_INTERVAL); // Vérifier toutes les 5 secondes (optimisé)
 
       return () => clearInterval(interval);
     }
@@ -31,23 +35,13 @@ function App() {
 
   const checkDependencies = async () => {
     try {
-      const response = await fetch(`${API_BASE}/check-dependencies`);
-      
-      // Vérifier le Content-Type
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        setBackendAvailable(false);
-        console.error('Le backend ne répond pas correctement. Vérifiez qu\'il est démarré sur le port 3001.');
-        return;
-      }
-      
-      const data = await response.json();
+      const data = await dvdApi.checkDependencies();
       setDependencies(data);
       setBackendAvailable(true);
     } catch (error) {
       setBackendAvailable(false);
-      if (error instanceof SyntaxError) {
-        console.error('Erreur: Le backend ne répond pas. Démarrez le serveur avec: cd server && npm start');
+      if (error instanceof ApiError) {
+        console.error('Le backend ne répond pas correctement:', error.message);
       } else {
         console.error('Erreur lors de la vérification des dépendances:', error);
       }
@@ -56,15 +50,7 @@ function App() {
 
   const checkStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE}/status`);
-      
-      // Vérifier le Content-Type
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        return; // Backend non disponible, ignorer silencieusement
-      }
-      
-      const data = await response.json();
+      const data = await dvdApi.getStatus();
       if (data.status !== 'idle') {
         setConversion(data);
         if (data.outputDir) {
@@ -75,40 +61,18 @@ function App() {
       }
     } catch (error) {
       // Ignorer les erreurs de connexion silencieusement pour le polling
-      if (!(error instanceof SyntaxError)) {
-        console.error('Erreur lors de la vérification du statut:', error);
-      }
+      debugLog('Erreur polling status:', error);
     }
   };
 
   const handleScan = async (dvdPath, setVtsList) => {
     setIsScanning(true);
     try {
-      const response = await fetch(`${API_BASE}/scan-dvd`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dvdPath })
-      });
-      
-      // Vérifier le Content-Type
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Le backend ne répond pas. Vérifiez qu\'il est démarré sur le port 3001.');
-      }
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Erreur lors du scan');
-      }
-      
-      const data = await response.json();
+      const data = await dvdApi.scanDvd(dvdPath);
       setVtsList(data.vtsList);
+      toast.success(`${data.vtsList.length} titre(s) détecté(s)`);
     } catch (error) {
-      if (error instanceof SyntaxError) {
-        alert('Erreur: Le backend ne répond pas correctement. Démarrez le serveur avec: cd server && npm start');
-      } else {
-        alert(`Erreur: ${error.message}`);
-      }
+      toast.error(`Erreur lors du scan: ${error.message}`);
     } finally {
       setIsScanning(false);
     }
@@ -116,59 +80,24 @@ function App() {
 
   const handleStart = async (config) => {
     try {
-      const response = await fetch(`${API_BASE}/convert`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
-      });
-      
-      // Vérifier le Content-Type
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Le backend ne répond pas. Vérifiez qu\'il est démarré sur le port 3001.');
-      }
-      
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error || 'Erreur lors du démarrage');
-      }
-      
-      const data = await response.json();
+      const data = await dvdApi.startConversion(config);
       setConversion(data.conversion);
       setOutputDir(config.outputDir);
+      toast.success('Conversion démarrée avec succès !');
       
-      // Démarrer le polling
-      const interval = setInterval(async () => {
-        await checkStatus();
-        try {
-          const statusResponse = await fetch(`${API_BASE}/status`);
-          const contentType = statusResponse.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            const current = await statusResponse.json();
-            if (current.status === 'completed' || current.status === 'stopped') {
-              clearInterval(interval);
-            }
-          }
-        } catch (err) {
-          // Ignorer les erreurs de polling
-        }
-      }, 2000);
-      
+      // Le polling est géré par useEffect (pas de double polling)
     } catch (error) {
-      if (error instanceof SyntaxError) {
-        alert('Erreur: Le backend ne répond pas correctement. Démarrez le serveur avec: cd server && npm start');
-      } else {
-        alert(`Erreur: ${error.message}`);
-      }
+      toast.error(`Erreur lors du démarrage: ${error.message}`);
     }
   };
 
   const handleStop = async () => {
     try {
-      await fetch(`${API_BASE}/stop`, { method: 'POST' });
+      await dvdApi.stopConversion();
       await checkStatus();
+      toast.warning('Conversion arrêtée par l\'utilisateur');
     } catch (error) {
-      alert(`Erreur: ${error.message}`);
+      toast.error(`Erreur lors de l'arrêt: ${error.message}`);
     }
   };
 

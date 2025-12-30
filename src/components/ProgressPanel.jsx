@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatDuration, formatBytes } from '../utils/formatters';
 
 const ProgressPanel = ({ conversion, onStop }) => {
   const [autoScroll, setAutoScroll] = useState(true);
@@ -23,13 +24,19 @@ const ProgressPanel = ({ conversion, onStop }) => {
 
   const { status, progress, logs, startTime, endTime } = conversion;
   
-  // Calculer la progression globale en comptant tous les titres (pending = 0%, success = 100%, etc.)
+  // BUG FIX: Calcul progression globale corrigé
+  // Problème: Les erreurs comptaient 0%, donnant un % incorrect
+  // Solution: Compter les tâches complétées (succès + erreurs) / total
   const totalProgress = progress.length > 0
     ? Math.min(100, Math.max(0, Math.round(
         progress.reduce((sum, p) => {
-          if (p.status === 'success') return sum + 100;
-          if (p.status === 'error' || p.status === 'cancelled') return sum + 0;
-          if (p.status === 'pending') return sum + 0;
+          if (p.status === 'success' || p.status === 'error' || p.status === 'cancelled') {
+            // Tâches terminées = 100% chacune
+            return sum + 100;
+          }
+          if (p.status === 'pending') {
+            return sum + 0;
+          }
           // status === 'processing'
           const prog = Math.min(100, Math.max(0, p.progress || 0));
           return sum + prog;
@@ -296,22 +303,6 @@ const ProgressPanel = ({ conversion, onStop }) => {
     </div>
   );
 };
-
-function formatDuration(seconds) {
-  if (!seconds) return '00:00:00';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function formatBytes(bytes) {
-  if (!bytes) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
 
 export default ProgressPanel;
 

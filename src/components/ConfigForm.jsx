@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import FolderPicker from './FolderPicker';
+import { useToast } from './common/ToastContainer';
 
 const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
+  const toast = useToast();
   const [config, setConfig] = useState({
     dvdPath: '/media/julien/LG_VDR/VIDEO_TS',
     outputDir: '/home/julien/Videos/DVD_Convert',
@@ -15,7 +17,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
 
   const handleScan = async () => {
     if (!config.dvdPath) {
-      alert('Veuillez entrer un chemin DVD');
+      toast.warning('Veuillez entrer un chemin DVD');
       return;
     }
     onScan(config.dvdPath, setVtsList);
@@ -23,7 +25,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
 
   const handleStart = () => {
     if (!config.dvdPath || !config.outputDir) {
-      alert('Veuillez remplir tous les champs requis');
+      toast.warning('Veuillez remplir tous les champs requis');
       return;
     }
     onStart({ ...config, selectedVts });
