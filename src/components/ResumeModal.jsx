@@ -13,10 +13,18 @@ const ResumeModal = ({ onResume, onDecline }) => {
   const checkForSavedState = async () => {
     try {
       setLoading(true);
-      const response = await dvdApi.get('/resume/state');
+      const response = await dvdApi.getResumeState();
       
-      if (response.hasState) {
-        setResumeData(response);
+      if (response.hasSavedState) {
+        setResumeData({
+          hasState: true,
+          state: response.state,
+          stats: {
+            total: response.state.progress?.details?.length || 0,
+            completed: response.state.progress?.details?.filter(d => d.status === 'success').length || 0,
+            remaining: response.state.progress?.details?.filter(d => d.status !== 'success').length || 0,
+          }
+        });
       } else {
         // Pas d'état sauvegardé, fermer automatiquement
         onDecline();
@@ -31,7 +39,7 @@ const ResumeModal = ({ onResume, onDecline }) => {
   const handleResume = async () => {
     try {
       setLoading(true);
-      await dvdApi.post('/resume', {});
+      // La reprise est gérée par le composant parent (App.jsx)
       onResume();
     } catch (err) {
       setError(`Erreur lors de la reprise: ${err.message}`);
@@ -41,7 +49,7 @@ const ResumeModal = ({ onResume, onDecline }) => {
 
   const handleDecline = async () => {
     try {
-      await dvdApi.delete('/resume/state');
+      await dvdApi.clearResumeState();
       onDecline();
     } catch (err) {
       console.error('Erreur suppression état:', err);
@@ -87,7 +95,7 @@ const ResumeModal = ({ onResume, onDecline }) => {
   }
 
   const { state, stats } = resumeData;
-  const savedDate = new Date(state.savedAt);
+  const savedDate = state.savedAt ? new Date(state.savedAt) : new Date();
   const now = new Date();
   const hoursDiff = Math.round((now - savedDate) / (1000 * 60 * 60));
 
@@ -127,48 +135,56 @@ const ResumeModal = ({ onResume, onDecline }) => {
 
           {/* Informations */}
           <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Chemin DVD:</span>
-              <span className="font-medium text-gray-800">{state.dvdPath}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Dossier de sortie:</span>
-              <span className="font-medium text-gray-800">{state.outputDir}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Preset:</span>
-              <span className="font-medium text-gray-800">{state.videoPreset}</span>
-            </div>
+            {state.config?.dvdPath && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Chemin DVD:</span>
+                <span className="font-medium text-gray-800 truncate ml-2">{state.config.dvdPath}</span>
+              </div>
+            )}
+            {state.outputDir && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Dossier de sortie:</span>
+                <span className="font-medium text-gray-800 truncate ml-2">{state.outputDir}</span>
+              </div>
+            )}
+            {state.config?.videoPreset && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Preset:</span>
+                <span className="font-medium text-gray-800">{state.config.videoPreset}</span>
+              </div>
+            )}
           </div>
 
           {/* Détails des VTS */}
-          <div className="border-t pt-4">
-            <h3 className="font-semibold text-gray-800 mb-3">Détails par titre</h3>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {state.progress.map((item, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center justify-between p-3 rounded-lg ${
-                    item.status === 'success'
-                      ? 'bg-green-50 border border-green-200'
-                      : 'bg-gray-50 border border-gray-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">
-                      {item.status === 'success' ? '✓' : '⏳'}
+          {state.progress?.details && state.progress.details.length > 0 && (
+            <div className="border-t pt-4">
+              <h3 className="font-semibold text-gray-800 mb-3">Détails par titre</h3>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {state.progress.details.map((item, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-center justify-between p-3 rounded-lg ${
+                      item.status === 'success'
+                        ? 'bg-green-50 border border-green-200'
+                        : 'bg-gray-50 border border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">
+                        {item.status === 'success' ? '✓' : '⏳'}
+                      </span>
+                      <span className="font-medium text-gray-800">{item.title}</span>
+                    </div>
+                    <span className={`text-sm ${
+                      item.status === 'success' ? 'text-green-600' : 'text-gray-600'
+                    }`}>
+                      {item.status === 'success' ? 'Complété' : 'À reprendre'}
                     </span>
-                    <span className="font-medium text-gray-800">VTS_{item.vts}</span>
                   </div>
-                  <span className={`text-sm ${
-                    item.status === 'success' ? 'text-green-600' : 'text-gray-600'
-                  }`}>
-                    {item.status === 'success' ? 'Complété' : 'À reprendre'}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Message d'information */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
