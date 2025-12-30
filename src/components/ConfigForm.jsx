@@ -2,16 +2,22 @@ import { useState } from 'react';
 import FolderPicker from './FolderPicker';
 import { useToast } from './common/ToastContainer';
 import { SkeletonList } from './Skeleton';
+import { usePersistedConfig } from '../hooks/usePersistedConfig';
 
 const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
   const toast = useToast();
-  const [config, setConfig] = useState({
+  
+  // Configuration par défaut
+  const defaultConfig = {
     dvdPath: '/media/julien/LG_VDR/VIDEO_TS',
     outputDir: '/home/julien/Videos/DVD_Convert',
     videoPreset: 'medium',
     videoCrf: '18',
     audioBitrate: '192k'
-  });
+  };
+  
+  // Utiliser le hook de persistance pour sauvegarder automatiquement
+  const [config, setConfig, resetToDefaults] = usePersistedConfig('dvd-ripper-config', defaultConfig);
 
   const [selectedVts, setSelectedVts] = useState([]);
   const [vtsList, setVtsList] = useState([]);
@@ -207,6 +213,29 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
             <option value="320k">320 kbps</option>
           </select>
         </div>
+      </div>
+
+      {/* Bouton restaurer paramètres par défaut */}
+      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Paramètres de conversion
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            Les paramètres sont sauvegardés automatiquement
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            resetToDefaults();
+            toast.success('Paramètres restaurés aux valeurs par défaut');
+          }}
+          disabled={isConverting}
+          className="ml-4 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          title="Réinitialiser aux valeurs par défaut"
+        >
+          🔄 Restaurer
+        </button>
       </div>
 
       {/* Bouton de démarrage */}
