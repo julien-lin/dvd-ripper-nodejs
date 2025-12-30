@@ -7,9 +7,14 @@ import { useTheme } from '../hooks/useTheme';
 const ThemeToggle = () => {
   const { isDark, toggleTheme } = useTheme();
 
+  const handleClick = () => {
+    console.log('🖱️ Clic sur ThemeToggle, isDark actuel:', isDark);
+    toggleTheme();
+  };
+
   return (
     <button
-      onClick={toggleTheme}
+      onClick={handleClick}
       className="relative p-2 rounded-lg transition-all duration-300 hover:scale-110 active:scale-95
                  bg-gray-100 dark:bg-gray-800 
                  text-gray-800 dark:text-gray-100
