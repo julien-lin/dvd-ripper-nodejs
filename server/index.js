@@ -281,6 +281,92 @@ app.post('/api/scan-dvd', scanLimiter, validate(scanDvdSchema), async (req, res)
   }
 });
 
+// Générer un thumbnail pour un VTS
+app.get('/api/vts-thumbnail/:vts', async (req, res) => {
+  try {
+    const { vts } = req.params;
+    const { dvdPath } = req.query;
+
+    if (!dvdPath) {
+      return res.status(400).json({ error: 'dvdPath requis' });
+    }
+
+    // SÉCURITÉ: Vérifier que le chemin est autorisé
+    if (!isPathAllowed(dvdPath)) {
+      return res.status(403).json({ error: 'Chemin non autorisé' });
+    }
+
+    if (!existsSync(dvdPath)) {
+      return res.status(404).json({ error: 'Chemin DVD introuvable' });
+    }
+
+    // Valider le numéro VTS
+    const vtsNum = parseInt(vts);
+    if (isNaN(vtsNum) || vtsNum < 1 || vtsNum > 99) {
+      return res.status(400).json({ error: 'Numéro VTS invalide' });
+    }
+
+    // Trouver les fichiers VOB pour ce VTS
+    const allFiles = readdirSync(dvdPath);
+    const vobFiles = allFiles.filter(f => 
+      f.toUpperCase().startsWith(`VTS_${String(vtsNum).padStart(2, '0')}_`) &&
+      f.toUpperCase().endsWith('.VOB') &&
+      !f.toUpperCase().endsWith('_0.VOB') // Exclure le menu
+    ).sort();
+
+    if (vobFiles.length === 0) {
+      return res.status(404).json({ error: `Aucun fichier VOB trouvé pour VTS_${vts}` });
+    }
+
+    // Prendre le premier fichier VOB
+    const firstVobPath = join(dvdPath, vobFiles[0]);
+
+    // Créer un dossier temporaire pour les thumbnails
+    const thumbnailDir = join(tmpdir(), 'dvd-thumbnails');
+    if (!existsSync(thumbnailDir)) {
+      mkdirSync(thumbnailDir, { recursive: true });
+    }
+
+    // Générer un nom de fichier unique
+    const thumbnailFilename = `vts_${vtsNum}_${Date.now()}.jpg`;
+    const thumbnailPath = join(thumbnailDir, thumbnailFilename);
+
+    // Extraire un frame à 10% de la vidéo avec FFmpeg
+    await new Promise((resolve, reject) => {
+      ffmpeg(firstVobPath)
+        .screenshots({
+          timestamps: ['10%'], // Frame à 10% de la durée
+          filename: thumbnailFilename,
+          folder: thumbnailDir,
+          size: '320x240' // Taille optimale pour thumbnail
+        })
+        .on('end', resolve)
+        .on('error', reject);
+    });
+
+    // Vérifier que le fichier a été créé
+    if (!existsSync(thumbnailPath)) {
+      return res.status(500).json({ error: 'Échec de génération du thumbnail' });
+    }
+
+    // Envoyer l'image
+    res.sendFile(thumbnailPath, (err) => {
+      // Supprimer le fichier après l'envoi
+      try {
+        if (existsSync(thumbnailPath)) {
+          unlinkSync(thumbnailPath);
+        }
+      } catch (cleanupError) {
+        console.warn('Erreur lors du nettoyage du thumbnail:', cleanupError);
+      }
+    });
+
+  } catch (error) {
+    console.error('Erreur génération thumbnail:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Fonctions getVideoDuration et formatDuration importées depuis src/services/ffmpegService.js
 
 // Démarrer la conversion
