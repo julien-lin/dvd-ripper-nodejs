@@ -1,4 +1,6 @@
 import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { spawn } from 'child_process';
@@ -29,9 +31,31 @@ import {
   createLogEntry, 
   checkBcAvailability 
 } from './src/services/utilsService.js';
+import { 
+  initializeWebSocket,
+  emitConversionProgress,
+  emitConversionComplete,
+  emitConversionError,
+  emitConversionStopped 
+} from './src/services/websocketService.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Créer le serveur HTTP
+const httpServer = createServer(app);
+
+// Initialiser Socket.io avec CORS
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
+// Initialiser le service WebSocket
+initializeWebSocket(io);
 
 app.use(cors());
 // SÉCURITÉ: Limiter la taille des requêtes JSON (protection DoS)
@@ -417,6 +441,8 @@ async function startConversion(config) {
       }, (progress) => {
         progressItem.progress = progress;
         progressItem.message = `Conversion VTS_${vtsNum}: ${progress}%`;
+        // Émettre la progression en temps réel via WebSocket
+        emitConversionProgress(currentConversion);
       }, expectedDuration);
 
       // Vérifier le résultat
@@ -448,6 +474,9 @@ async function startConversion(config) {
   currentConversion.status = 'completed';
   currentConversion.endTime = new Date();
   addLog(`INFO`, `Conversion terminée: ${success} succès, ${failed} échecs`);
+  
+  // Émettre l'événement de complétion via WebSocket
+  emitConversionComplete(currentConversion);
 }
 
 // Convertir un VTS
@@ -632,6 +661,9 @@ app.post('/api/stop', (req, res) => {
     currentConversion.status = 'stopped';
     currentConversion.endTime = new Date();
     addLog('INFO', 'Conversion arrêtée par l\'utilisateur');
+    
+    // Émettre l'événement d'arrêt via WebSocket
+    emitConversionStopped(currentConversion);
   }
   
   res.json({ message: 'Conversion arrêtée' });
@@ -691,8 +723,9 @@ app.get('/api/analyze', validateQuery(analyzeSchema), async (req, res) => {
 // Formater les bytes
 // Fonction formatBytes importée depuis src/services/ffmpegService.js
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`🚀 Serveur backend démarré sur http://localhost:${PORT}`);
+  console.log(`✓ WebSocket activé pour le temps réel`);
 });
 
 

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ConfigForm from './components/ConfigForm';
 import ProgressPanel from './components/ProgressPanel';
@@ -6,6 +6,7 @@ import ResultsPanel from './components/ResultsPanel';
 import { POLLING_INTERVAL, debugLog } from './config';
 import dvdApi, { ApiError } from './api/client';
 import { useToast } from './components/common/ToastContainer';
+import { useWebSocket } from './hooks/useWebSocket';
 import {
   selectConversion,
   selectOutputDir,
@@ -26,6 +27,7 @@ import {
 function App() {
   const toast = useToast();
   const dispatch = useDispatch();
+  const [usePolling, setUsePolling] = useState(false); // Fallback sur polling si WebSocket échoue
   
   // Selectors Redux
   const dependencies = useSelector(selectDependencies);
@@ -34,24 +36,55 @@ function App() {
   const backendAvailable = useSelector(selectBackendAvailable);
   const isScanning = useSelector(selectIsScanning);
 
+  // WebSocket pour temps réel
+  const { isConnected } = useWebSocket({
+    onConversionProgress: (data) => {
+      dispatch(setConversion(data));
+    },
+    onConversionComplete: (data) => {
+      dispatch(setConversion(data));
+      toast.success('✅ Conversion terminée !');
+    },
+    onConversionError: (data) => {
+      dispatch(setConversion(data));
+      toast.error('❌ Erreur pendant la conversion');
+    },
+    onConversionStopped: (data) => {
+      dispatch(setConversion(data));
+      toast.warning('⏸️ Conversion arrêtée');
+    },
+    enabled: backendAvailable && !usePolling,
+  });
+
   // Vérifier les dépendances au chargement
   useEffect(() => {
     checkDependencies();
     checkStatus();
   }, []);
 
-  // Polling pour les conversions en cours
+  // Fallback: Polling si WebSocket non connecté
   useEffect(() => {
-    if (conversion?.status === 'running') {
-      // PERFORMANCE: Réduit de 1s à 5s (3600 → 720 req/h/user)
-      // TODO: Implémenter WebSockets pour temps réel sans polling
+    // Si WebSocket ne se connecte pas après 10 secondes, utiliser le polling
+    if (backendAvailable && !isConnected && !usePolling) {
+      const timeout = setTimeout(() => {
+        console.warn('⚠️ WebSocket non disponible, fallback sur polling');
+        setUsePolling(true);
+      }, 10000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [backendAvailable, isConnected, usePolling]);
+
+  // Polling (uniquement si WebSocket échoue)
+  useEffect(() => {
+    if (usePolling && conversion?.status === 'running') {
       const interval = setInterval(() => {
         checkStatus();
-      }, POLLING_INTERVAL); // Vérifier toutes les 5 secondes (optimisé)
+      }, POLLING_INTERVAL);
 
       return () => clearInterval(interval);
     }
-  }, [conversion?.status]);
+  }, [usePolling, conversion?.status]);
 
   const checkDependencies = async () => {
     try {
