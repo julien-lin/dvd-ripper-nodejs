@@ -2,13 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { spawn } from 'child_process';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
+import { join } from 'path';
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegStatic from 'ffmpeg-static';
-import ffprobeStatic from 'ffprobe-static';
 import { 
   scanDvdSchema, 
   listDirectorySchema, 
@@ -17,59 +14,24 @@ import {
   validate,
   validateQuery 
 } from './validation.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { 
+  getVideoDuration, 
+  formatDuration, 
+  formatBytes, 
+  checkFfmpegDependencies 
+} from './src/services/ffmpegService.js';
+// convertVTS est défini localement car il a une logique spécifique de concaténation
+import { 
+  isPathAllowed, 
+  isValidFilename 
+} from './src/services/securityService.js';
+import { 
+  createLogEntry, 
+  checkBcAvailability 
+} from './src/services/utilsService.js';
 
 const app = express();
-const PORT = 3001;
-
-// Configuration ffmpeg avec binaires embarqués
-// Utilisation des binaires statiques fournis par les packages npm
-let ffmpegPath = null;
-let ffprobePath = null;
-
-try {
-  // ffmpeg-static retourne directement le chemin (string)
-  if (ffmpegStatic && typeof ffmpegStatic === 'string') {
-    ffmpegPath = ffmpegStatic;
-    ffmpeg.setFfmpegPath(ffmpegPath);
-    console.log(`✓ ffmpeg embarqué: ${ffmpegPath}`);
-  } else {
-    console.warn('⚠ ffmpeg-static retourne null ou valeur inattendue');
-    console.warn('   Type:', typeof ffmpegStatic, 'Valeur:', ffmpegStatic);
-  }
-} catch (error) {
-  console.error('✗ Erreur lors de l\'import de ffmpeg-static:', error.message);
-}
-
-try {
-  // ffprobe-static retourne un objet avec une propriété path
-  if (ffprobeStatic) {
-    if (typeof ffprobeStatic === 'string') {
-      ffprobePath = ffprobeStatic;
-    } else if (ffprobeStatic.path) {
-      ffprobePath = ffprobeStatic.path;
-    } else if (ffprobeStatic.default) {
-      // Gestion des exports par défaut ES modules
-      const defaultExport = ffprobeStatic.default;
-      ffprobePath = typeof defaultExport === 'string' 
-        ? defaultExport 
-        : defaultExport.path;
-    }
-    
-    if (ffprobePath) {
-      ffmpeg.setFfprobePath(ffprobePath);
-      console.log(`✓ ffprobe embarqué: ${ffprobePath}`);
-    } else {
-      console.warn('⚠ ffprobe-static structure inattendue:', JSON.stringify(ffprobeStatic, null, 2));
-    }
-  } else {
-    console.warn('⚠ ffprobe-static retourne null');
-  }
-} catch (error) {
-  console.error('✗ Erreur lors de l\'import de ffprobe-static:', error.message);
-}
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 // SÉCURITÉ: Limiter la taille des requêtes JSON (protection DoS)
@@ -116,91 +78,23 @@ let currentConversion = null;
 let conversionProcess = null;
 let conversionLock = false; // Mutex pour éviter race conditions
 
-// Whitelist des dossiers autorisés pour la navigation
-const ALLOWED_ROOTS = [
-  '/media',
-  '/mnt',
-  '/home',
-  process.env.HOME || '', // eslint-disable-line no-undef
-  process.env.USERPROFILE || '' // eslint-disable-line no-undef
-].filter(Boolean);
-
-// Fonction de sécurité : vérifier si un chemin est autorisé
-function isPathAllowed(userPath) {
-  try {
-    const normalized = join(userPath); // Normalise et résout le chemin
-    
-    // Vérifier si le chemin commence par un des dossiers autorisés
-    return ALLOWED_ROOTS.some(root => {
-      const resolvedRoot = join(root);
-      return normalized === resolvedRoot || normalized.startsWith(resolvedRoot + '/');
-    });
-  } catch {
-    return false;
-  }
-}
-
-// Fonction de sécurité : valider les noms de fichiers (protection command injection)
-function isValidFilename(filename) {
-  // Autoriser seulement: lettres, chiffres, tirets, underscores, points
-  // Bloque: ; | & $ ( ) ` < > et autres caractères dangereux
-  const safePattern = /^[a-zA-Z0-9_\-.]+$/;
-  return safePattern.test(filename);
-}
+// Les fonctions de sécurité (isPathAllowed, isValidFilename) sont importées depuis src/services/securityService.js
 
 // Vérifier les dépendances
 app.get('/api/check-dependencies', async (req, res) => {
   try {
-    // Détecter les chemins des binaires embarqués
-    let detectedFfmpegPath = null;
-    let detectedFfprobePath = null;
+    // Utiliser le service ffmpeg pour vérifier ffmpeg/ffprobe
+    const ffmpegDeps = checkFfmpegDependencies();
     
-    // Détecter ffmpeg (retourne directement le chemin string)
-    if (ffmpegStatic && typeof ffmpegStatic === 'string') {
-      detectedFfmpegPath = ffmpegStatic;
-    }
-    
-    // Détecter ffprobe (retourne un objet avec propriété path)
-    if (ffprobeStatic) {
-      if (typeof ffprobeStatic === 'string') {
-        detectedFfprobePath = ffprobeStatic;
-      } else if (ffprobeStatic.path) {
-        detectedFfprobePath = ffprobeStatic.path;
-      } else if (ffprobeStatic.default) {
-        const defaultExport = ffprobeStatic.default;
-        detectedFfprobePath = typeof defaultExport === 'string' 
-          ? defaultExport 
-          : (defaultExport.path || null);
-      }
-    }
-    
-    // Vérifier que les fichiers existent
-    const ffmpegExists = detectedFfmpegPath ? existsSync(detectedFfmpegPath) : false;
-    const ffprobeExists = detectedFfprobePath ? existsSync(detectedFfprobePath) : false;
-    
-    // Logs de débogage si nécessaire
-    if (!ffmpegExists) {
-      console.warn('⚠ ffmpeg embarqué non trouvé. Chemin:', detectedFfmpegPath);
-    }
-    if (!ffprobeExists) {
-      console.warn('⚠ ffprobe embarqué non trouvé. Chemin:', detectedFfprobePath);
-    }
-    
-    // Vérifier bc (seule dépendance système nécessaire)
-    const checkCommand = (cmd) => {
-      return new Promise((resolve) => {
-        const process = spawn('which', [cmd]);
-        process.on('close', (code) => resolve(code === 0));
-      });
-    };
-    const bcExists = await checkCommand('bc');
+    // Vérifier bc
+    const bcExists = await checkBcAvailability();
 
     res.json({
-      ffmpeg: ffmpegExists,
-      ffprobe: ffprobeExists,
+      ffmpeg: ffmpegDeps.ffmpeg,
+      ffprobe: ffmpegDeps.ffprobe,
       bc: bcExists,
-      allInstalled: ffmpegExists && ffprobeExists && bcExists,
-      embedded: true // Indique que ffmpeg/ffprobe sont embarqués
+      allInstalled: ffmpegDeps.ffmpeg && ffmpegDeps.ffprobe && bcExists,
+      embedded: ffmpegDeps.embedded
     });
   } catch (error) {
     console.error('Erreur lors de la vérification des dépendances:', error);
@@ -357,27 +251,7 @@ app.post('/api/scan-dvd', scanLimiter, validate(scanDvdSchema), async (req, res)
   }
 });
 
-// Obtenir la durée d'une vidéo
-function getVideoDuration(input) {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(input, (err, metadata) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(metadata.format.duration || 0);
-      }
-    });
-  });
-}
-
-// Formater la durée
-function formatDuration(seconds) {
-  if (!seconds || seconds === 0) return '00:00:00';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
+// Fonctions getVideoDuration et formatDuration importées depuis src/services/ffmpegService.js
 
 // Démarrer la conversion
 app.post('/api/convert', convertLimiter, validate(convertSchema), async (req, res) => {
@@ -701,12 +575,7 @@ function convertVTS(input, output, options, onProgress, expectedDuration = 0) {
 
 // Ajouter un log
 function addLog(level, message) {
-  const timestamp = new Date().toISOString();
-  const logEntry = {
-    timestamp,
-    level,
-    message
-  };
+  const logEntry = createLogEntry(level, message);
   if (currentConversion) {
     currentConversion.logs.push(logEntry);
     // Garder seulement les 100 derniers logs
@@ -820,13 +689,7 @@ app.get('/api/analyze', validateQuery(analyzeSchema), async (req, res) => {
 });
 
 // Formater les bytes
-function formatBytes(bytes) {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
+// Fonction formatBytes importée depuis src/services/ffmpegService.js
 
 app.listen(PORT, () => {
   console.log(`🚀 Serveur backend démarré sur http://localhost:${PORT}`);

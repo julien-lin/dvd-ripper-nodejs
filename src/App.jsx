@@ -1,18 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import ConfigForm from './components/ConfigForm';
 import ProgressPanel from './components/ProgressPanel';
 import ResultsPanel from './components/ResultsPanel';
 import { POLLING_INTERVAL, debugLog } from './config';
 import dvdApi, { ApiError } from './api/client';
 import { useToast } from './components/common/ToastContainer';
+import {
+  selectConversion,
+  selectOutputDir,
+  selectIsScanning,
+  selectIsConverting,
+  setConversion,
+  clearConversion,
+  setOutputDir,
+  setIsScanning,
+} from './store/conversionSlice';
+import {
+  selectDependencies,
+  selectBackendAvailable,
+  setDependencies,
+  setBackendAvailable,
+} from './store/systemSlice';
 
 function App() {
   const toast = useToast();
-  const [dependencies, setDependencies] = useState(null);
-  const [conversion, setConversion] = useState(null);
-  const [outputDir, setOutputDir] = useState('');
-  const [backendAvailable, setBackendAvailable] = useState(true);
-  const [isScanning, setIsScanning] = useState(false);
+  const dispatch = useDispatch();
+  
+  // Selectors Redux
+  const dependencies = useSelector(selectDependencies);
+  const conversion = useSelector(selectConversion);
+  const outputDir = useSelector(selectOutputDir);
+  const backendAvailable = useSelector(selectBackendAvailable);
+  const isScanning = useSelector(selectIsScanning);
 
   // Vérifier les dépendances au chargement
   useEffect(() => {
@@ -36,10 +56,10 @@ function App() {
   const checkDependencies = async () => {
     try {
       const data = await dvdApi.checkDependencies();
-      setDependencies(data);
-      setBackendAvailable(true);
+      dispatch(setDependencies(data));
+      dispatch(setBackendAvailable(true));
     } catch (error) {
-      setBackendAvailable(false);
+      dispatch(setBackendAvailable(false));
       if (error instanceof ApiError) {
         console.error('Le backend ne répond pas correctement:', error.message);
       } else {
@@ -52,12 +72,12 @@ function App() {
     try {
       const data = await dvdApi.getStatus();
       if (data.status !== 'idle') {
-        setConversion(data);
+        dispatch(setConversion(data));
         if (data.outputDir) {
-          setOutputDir(data.outputDir);
+          dispatch(setOutputDir(data.outputDir));
         }
       } else {
-        setConversion(null);
+        dispatch(clearConversion());
       }
     } catch (error) {
       // Ignorer les erreurs de connexion silencieusement pour le polling
@@ -66,7 +86,7 @@ function App() {
   };
 
   const handleScan = async (dvdPath, setVtsList) => {
-    setIsScanning(true);
+    dispatch(setIsScanning(true));
     try {
       const data = await dvdApi.scanDvd(dvdPath);
       setVtsList(data.vtsList);
@@ -74,15 +94,15 @@ function App() {
     } catch (error) {
       toast.error(`Erreur lors du scan: ${error.message}`);
     } finally {
-      setIsScanning(false);
+      dispatch(setIsScanning(false));
     }
   };
 
   const handleStart = async (config) => {
     try {
       const data = await dvdApi.startConversion(config);
-      setConversion(data.conversion);
-      setOutputDir(config.outputDir);
+      dispatch(setConversion(data.conversion));
+      dispatch(setOutputDir(config.outputDir));
       toast.success('Conversion démarrée avec succès !');
       
       // Le polling est géré par useEffect (pas de double polling)
