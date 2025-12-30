@@ -1,14 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import dvdApi from '../api/client';
+import { trapFocus, handleEscape } from '../utils/a11y';
 
 const ResumeModal = ({ onResume, onDecline }) => {
   const [resumeData, setResumeData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const modalRef = useRef(null);
 
   useEffect(() => {
     checkForSavedState();
   }, []);
+
+  // Focus trap et gestion Escape
+  useEffect(() => {
+    if (!modalRef.current || loading) return;
+
+    // Piège de focus
+    const cleanupFocusTrap = trapFocus(modalRef.current);
+
+    // Gestion Escape
+    const cleanupEscape = handleEscape(() => {
+      if (!loading) {
+        handleDecline();
+      }
+    });
+
+    return () => {
+      cleanupFocusTrap();
+      cleanupEscape();
+    };
+  }, [modalRef.current, loading]);
 
   const checkForSavedState = async () => {
     try {
@@ -102,15 +124,26 @@ const ResumeModal = ({ onResume, onDecline }) => {
   const hoursDiff = Math.round((now - savedDate) / (1000 * 60 * 60));
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in"
+      onClick={handleDecline}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="resume-modal-title"
+      aria-describedby="resume-modal-description"
+    >
+      <div 
+        ref={modalRef}
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
           <div className="flex items-center gap-3 mb-2">
-            <div className="text-4xl">🔄</div>
+            <div className="text-4xl" aria-hidden="true">🔄</div>
             <div>
-              <h2 className="text-2xl font-bold">Conversion interrompue détectée</h2>
-              <p className="text-blue-100 text-sm">
+              <h2 id="resume-modal-title" className="text-2xl font-bold">Conversion interrompue détectée</h2>
+              <p id="resume-modal-description" className="text-blue-100 text-sm">
                 Une conversion était en cours il y a {hoursDiff}h
               </p>
             </div>
