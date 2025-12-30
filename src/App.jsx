@@ -4,10 +4,18 @@ import ConfigForm from './components/ConfigForm';
 import ProgressPanel from './components/ProgressPanel';
 import ResultsPanel from './components/ResultsPanel';
 import ResumeModal from './components/ResumeModal';
+import NotificationSettings from './components/NotificationSettings';
 import { POLLING_INTERVAL, debugLog } from './config';
 import dvdApi, { ApiError } from './api/client';
 import { useToast } from './components/common/ToastContainer';
 import { useWebSocket } from './hooks/useWebSocket';
+import {
+  notifyConversionComplete,
+  notifyConversionError,
+  notifyConversionStopped,
+  titleBadge,
+  loadNotificationPreferences,
+} from './services/notificationService';
 import {
   selectConversion,
   selectOutputDir,
@@ -42,18 +50,53 @@ function App() {
   const { isConnected } = useWebSocket({
     onConversionProgress: (data) => {
       dispatch(setConversion(data));
+      // Mettre à jour le badge du titre
+      if (data.progress) {
+        const totalProgress = Math.round(data.progress.totalProgress || 0);
+        titleBadge.setPermanent(`(${totalProgress}%)`, 'DVD Ripper');
+      }
     },
     onConversionComplete: (data) => {
       dispatch(setConversion(data));
       toast.success('✅ Conversion terminée !');
+      
+      // Notifications
+      if (loadNotificationPreferences()) {
+        const stats = {
+          success: data.progress?.details?.filter(d => d.status === 'success').length || 0,
+          failed: data.progress?.details?.filter(d => d.status === 'error').length || 0,
+        };
+        notifyConversionComplete(stats);
+      }
+      
+      // Badge de succès clignotant
+      titleBadge.set('✅', 'Conversion terminée');
+      setTimeout(() => titleBadge.reset(), 10000);
     },
     onConversionError: (data) => {
       dispatch(setConversion(data));
       toast.error('❌ Erreur pendant la conversion');
+      
+      // Notifications
+      if (loadNotificationPreferences()) {
+        notifyConversionError(data.error || 'Une erreur est survenue');
+      }
+      
+      // Badge d'erreur
+      titleBadge.setPermanent('❌', 'Erreur de conversion');
+      setTimeout(() => titleBadge.reset(), 10000);
     },
     onConversionStopped: (data) => {
       dispatch(setConversion(data));
       toast.warning('⏸️ Conversion arrêtée');
+      
+      // Notifications
+      if (loadNotificationPreferences()) {
+        notifyConversionStopped();
+      }
+      
+      // Réinitialiser le badge
+      titleBadge.reset();
     },
     enabled: backendAvailable && !usePolling,
   });
@@ -64,6 +107,21 @@ function App() {
     checkStatus();
     // Vérifier s'il y a une conversion à reprendre
     setShowResumeModal(true);
+    
+    // Réinitialiser le badge du titre
+    titleBadge.reset();
+    
+    // Réinitialiser le badge quand l'utilisateur revient sur la page
+    const handleVisibilityChange = () => {
+      if (!document.hidden && conversion?.status !== 'running') {
+        titleBadge.reset();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // Fallback: Polling si WebSocket non connecté
@@ -142,6 +200,9 @@ function App() {
       dispatch(setOutputDir(config.outputDir));
       toast.success('Conversion démarrée avec succès !');
       
+      // Réinitialiser le badge du titre
+      titleBadge.reset();
+      
       // Le polling est géré par useEffect (pas de double polling)
     } catch (error) {
       toast.error(`Erreur lors du démarrage: ${error.message}`);
@@ -183,12 +244,17 @@ function App() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
-            🎬 Extracteur DVD vers MP4
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
-            Interface conviviale pour convertir vos DVD en fichiers MP4
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+                🎬 Extracteur DVD vers MP4
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
+                Interface conviviale pour convertir vos DVD en fichiers MP4
+              </p>
+            </div>
+            {backendAvailable && <NotificationSettings />}
+          </div>
         </div>
       </header>
 
