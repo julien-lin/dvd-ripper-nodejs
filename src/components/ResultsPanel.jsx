@@ -1,3 +1,5 @@
+import { formatDuration, formatBytes, calculateBitrate } from '../utils/formatters';
+
 const ResultsPanel = ({ conversion, outputDir }) => {
   if (!conversion || !outputDir) {
     return (
@@ -56,7 +58,7 @@ const ResultsPanel = ({ conversion, outputDir }) => {
         <h3 className="font-semibold text-gray-800 mb-3">Fichiers convertis</h3>
         <div className="space-y-2">
           {completedFiles.map((file, index) => {
-            const bitrate = file.size && file.duration ? (file.size * 8 / file.duration / 1000000).toFixed(2) : 'N/A';
+            const bitrate = calculateBitrate(file.size, file.duration);
             
             return (
               <div 
@@ -91,21 +93,5 @@ const ResultsPanel = ({ conversion, outputDir }) => {
     </div>
   );
 };
-
-function formatDuration(seconds) {
-  if (!seconds) return '00:00:00';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function formatBytes(bytes) {
-  if (!bytes) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
 
 export default ResultsPanel;

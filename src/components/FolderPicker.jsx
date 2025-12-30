@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-
-const API_BASE = 'http://localhost:3001/api';
+import dvdApi, { ApiError } from '../api/client';
 
 const FolderPicker = ({ value, onChange, label, placeholder, disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,32 +19,13 @@ const FolderPicker = ({ value, onChange, label, placeholder, disabled }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/list-directory`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path })
-      });
-
-      // Vérifier le Content-Type avant de parser
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        throw new Error('Le serveur a retourné une réponse invalide. Vérifiez que le backend est démarré.');
-      }
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Erreur lors du chargement');
-      }
-
-      const data = await response.json();
+      const data = await dvdApi.listDirectory(path);
       setItems(data.items || []);
     } catch (err) {
-      // Gérer les erreurs de parsing JSON
-      if (err instanceof SyntaxError) {
-        setError('Erreur de communication avec le serveur. Vérifiez que le backend est démarré sur le port 3001.');
-      } else {
+      if (err instanceof ApiError) {
         setError(err.message);
+      } else {
+        setError('Erreur de communication avec le serveur.');
       }
       setItems([]);
     } finally {

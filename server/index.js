@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -8,6 +9,14 @@ import { tmpdir } from 'os';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegStatic from 'ffmpeg-static';
 import ffprobeStatic from 'ffprobe-static';
+import { 
+  scanDvdSchema, 
+  listDirectorySchema, 
+  convertSchema, 
+  analyzeSchema,
+  validate,
+  validateQuery 
+} from './validation.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -63,11 +72,81 @@ try {
 }
 
 app.use(cors());
-app.use(express.json());
+// SÉCURITÉ: Limiter la taille des requêtes JSON (protection DoS)
+app.use(express.json({ limit: '10mb' }));
+
+// SÉCURITÉ: Rate limiters pour prévenir les abus
+const scanLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // 10 scans maximum par minute
+  message: { error: 'Trop de requêtes de scan. Réessayez dans 1 minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const convertLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 3, // 3 conversions maximum par minute
+  message: { error: 'Trop de conversions lancées. Réessayez dans 1 minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const listDirectoryLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // 30 requêtes maximum par minute
+  message: { error: 'Trop de requêtes de navigation. Réessayez dans 1 minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // 60 requêtes maximum par minute
+  message: { error: 'Trop de requêtes. Réessayez dans 1 minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Appliquer le rate limiter général à toutes les routes
+app.use('/api/', generalLimiter);
 
 // Variables globales pour suivre la conversion
 let currentConversion = null;
 let conversionProcess = null;
+let conversionLock = false; // Mutex pour éviter race conditions
+
+// Whitelist des dossiers autorisés pour la navigation
+const ALLOWED_ROOTS = [
+  '/media',
+  '/mnt',
+  '/home',
+  process.env.HOME || '', // eslint-disable-line no-undef
+  process.env.USERPROFILE || '' // eslint-disable-line no-undef
+].filter(Boolean);
+
+// Fonction de sécurité : vérifier si un chemin est autorisé
+function isPathAllowed(userPath) {
+  try {
+    const normalized = join(userPath); // Normalise et résout le chemin
+    
+    // Vérifier si le chemin commence par un des dossiers autorisés
+    return ALLOWED_ROOTS.some(root => {
+      const resolvedRoot = join(root);
+      return normalized === resolvedRoot || normalized.startsWith(resolvedRoot + '/');
+    });
+  } catch {
+    return false;
+  }
+}
+
+// Fonction de sécurité : valider les noms de fichiers (protection command injection)
+function isValidFilename(filename) {
+  // Autoriser seulement: lettres, chiffres, tirets, underscores, points
+  // Bloque: ; | & $ ( ) ` < > et autres caractères dangereux
+  const safePattern = /^[a-zA-Z0-9_\-.]+$/;
+  return safePattern.test(filename);
+}
 
 // Vérifier les dépendances
 app.get('/api/check-dependencies', async (req, res) => {
@@ -130,7 +209,7 @@ app.get('/api/check-dependencies', async (req, res) => {
 });
 
 // Lister le contenu d'un répertoire
-app.post('/api/list-directory', async (req, res) => {
+app.post('/api/list-directory', listDirectoryLimiter, validate(listDirectorySchema), async (req, res) => {
   try {
     const { path } = req.body;
     
@@ -138,12 +217,27 @@ app.post('/api/list-directory', async (req, res) => {
       return res.status(400).json({ error: 'Chemin requis' });
     }
 
+    // SÉCURITÉ: Bloquer path traversal
+    if (path.includes('..')) {
+      console.warn('⚠️ Tentative de path traversal bloquée:', path);
+      return res.status(403).json({ error: 'Chemin non autorisé: path traversal détecté' });
+    }
+
     // Normaliser le chemin
     let normalizedPath = path;
     if (path === '~') {
-      normalizedPath = process.env.HOME || process.env.USERPROFILE || '/';
+      normalizedPath = process.env.HOME || process.env.USERPROFILE || '/'; // eslint-disable-line no-undef
     } else if (path.startsWith('~/')) {
-      normalizedPath = join(process.env.HOME || process.env.USERPROFILE || '/', path.slice(2));
+      normalizedPath = join(process.env.HOME || process.env.USERPROFILE || '/', path.slice(2)); // eslint-disable-line no-undef
+    }
+
+    // SÉCURITÉ: Vérifier whitelist
+    if (!isPathAllowed(normalizedPath)) {
+      console.warn('⚠️ Accès refusé à:', normalizedPath);
+      return res.status(403).json({ 
+        error: 'Accès refusé: ce dossier n\'est pas autorisé',
+        allowedRoots: ALLOWED_ROOTS 
+      });
     }
 
     // Vérifier que le chemin existe
@@ -171,7 +265,7 @@ app.post('/api/list-directory', async (req, res) => {
             isDirectory: entryStats.isDirectory(),
             isFile: entryStats.isFile()
           };
-        } catch (err) {
+        } catch {
           // Ignorer les entrées inaccessibles
           return null;
         }
@@ -195,7 +289,7 @@ app.post('/api/list-directory', async (req, res) => {
 });
 
 // Scanner les VTS d'un DVD
-app.post('/api/scan-dvd', async (req, res) => {
+app.post('/api/scan-dvd', scanLimiter, validate(scanDvdSchema), async (req, res) => {
   try {
     const { dvdPath } = req.body;
     
@@ -205,6 +299,7 @@ app.post('/api/scan-dvd', async (req, res) => {
 
     const vobFiles = readdirSync(dvdPath)
       .filter(file => file.match(/^VTS_\d{2}_\d+\.VOB$/i))
+      .filter(file => isValidFilename(file)) // SÉCURITÉ: Bloquer command injection
       .sort();
 
     // Grouper par VTS
@@ -285,11 +380,15 @@ function formatDuration(seconds) {
 }
 
 // Démarrer la conversion
-app.post('/api/convert', async (req, res) => {
+app.post('/api/convert', convertLimiter, validate(convertSchema), async (req, res) => {
   try {
-    if (currentConversion) {
+    // SÉCURITÉ: Mutex pour éviter race condition (2 conversions simultanées)
+    if (conversionLock || currentConversion) {
       return res.status(400).json({ error: 'Une conversion est déjà en cours' });
     }
+    
+    // Acquérir le lock
+    conversionLock = true;
 
     const {
       dvdPath,
@@ -316,6 +415,7 @@ app.post('/api/convert', async (req, res) => {
     // Scanner les VTS pour initialiser le progress avec tous les titres
     const vobFiles = readdirSync(dvdPath)
       .filter(file => file.match(/^VTS_\d{2}_\d+\.VOB$/i))
+      .filter(file => isValidFilename(file)) // SÉCURITÉ: Bloquer command injection
       .sort();
 
     const vtsGroups = {};
@@ -358,9 +458,14 @@ app.post('/api/convert', async (req, res) => {
 
     // Démarrer la conversion en arrière-plan
     startConversion(currentConversion);
+    
+    // Libérer le lock après initialisation
+    conversionLock = false;
 
     res.json({ message: 'Conversion démarrée', conversion: currentConversion });
   } catch (error) {
+    // Libérer le lock en cas d'erreur
+    conversionLock = false;
     res.status(500).json({ error: error.message });
   }
 });
@@ -369,12 +474,10 @@ app.post('/api/convert', async (req, res) => {
 async function startConversion(config) {
   const { dvdPath, outputDir, videoPreset, videoCrf, audioBitrate, selectedVts } = config;
   
-  // Flag pour vérifier si la conversion a été arrêtée
-  let isStopped = false;
-  
   // Scanner les VTS
   const vobFiles = readdirSync(dvdPath)
     .filter(file => file.match(/^VTS_\d{2}_\d+\.VOB$/i))
+    .filter(file => isValidFilename(file)) // SÉCURITÉ: Bloquer command injection
     .sort();
 
   const vtsGroups = {};
@@ -393,7 +496,6 @@ async function startConversion(config) {
     ? Object.keys(vtsGroups).filter(vts => selectedVts.includes(vts))
     : Object.keys(vtsGroups);
 
-  let total = vtsToConvert.length;
   let success = 0;
   let failed = 0;
 
@@ -490,7 +592,6 @@ function convertVTS(input, output, options, onProgress, expectedDuration = 0) {
       return reject(new Error(`Erreur création fichier concat: ${err.message}`));
     }
     
-    let startTime = null;
     let lastProgressUpdate = 0;
     
     // Fonction pour parser le timemark (format: HH:MM:SS.ms)
@@ -529,8 +630,7 @@ function convertVTS(input, output, options, onProgress, expectedDuration = 0) {
         '-max_muxing_queue_size', '9999'
       ])
       .output(output)
-      .on('start', (commandLine) => {
-        startTime = Date.now();
+      .on('start', () => {
         addLog('INFO', `Démarrage de l'encodage...`);
         addLog('INFO', `Configuration: ${options.preset} preset, CRF ${options.crf}`);
       })
@@ -669,7 +769,7 @@ app.post('/api/stop', (req, res) => {
 });
 
 // Analyser les résultats
-app.get('/api/analyze', async (req, res) => {
+app.get('/api/analyze', validateQuery(analyzeSchema), async (req, res) => {
   try {
     const { outputDir } = req.query;
     
