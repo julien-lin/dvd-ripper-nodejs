@@ -49,7 +49,7 @@ const NotificationSettings = () => {
       {/* Bouton icône */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:bg-gray-700 rounded-lg transition-colors relative"
+        className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors relative"
         title="Paramètres de notifications"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,12 +65,12 @@ const NotificationSettings = () => {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
           
           {/* Panel */}
-          <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 z-20 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white">
               <h3 className="font-semibold text-lg flex items-center gap-2">
@@ -91,12 +91,17 @@ const NotificationSettings = () => {
                 </div>
                 <button
                   onClick={handleToggle}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    enabled && permission === 'granted' ? 'bg-blue-600' : 'bg-gray-300'
+                  aria-label={enabled ? "Désactiver les notifications" : "Activer les notifications"}
+                  role="switch"
+                  aria-checked={enabled && permission === 'granted'}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+                    enabled && permission === 'granted' 
+                      ? 'bg-blue-600 dark:bg-blue-500' 
+                      : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-200 ease-in-out ${
                       enabled && permission === 'granted' ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
