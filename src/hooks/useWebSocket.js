@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { config } from '../config';
+import { API_BASE_URL } from '../config';
 
 /**
  * Hook React pour gérer la connexion WebSocket
@@ -32,7 +32,7 @@ export function useWebSocket({
     isConnectingRef.current = true;
 
     // Déterminer l'URL du backend WebSocket
-    const wsUrl = config.API_BASE_URL.replace('/api', '').replace('http', 'ws');
+    const wsUrl = API_BASE_URL.replace('/api', '').replace('http', 'ws');
     
     console.log(`🔌 Connexion WebSocket à ${wsUrl}...`);
 
