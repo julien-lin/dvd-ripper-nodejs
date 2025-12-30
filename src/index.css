@@ -18,13 +18,11 @@
 }
 
 /* ============================================
-   DARK MODE SETUP
+   DARK MODE SETUP (Tailwind CSS 4)
    ============================================ */
 
-/* Configuration pour activer le dark mode via classe */
-@layer utilities {
-  /* Le dark mode sera activé quand la classe 'dark' est sur <html> */
-}
+/* Configuration du dark mode via classe sur <html> */
+@variant dark (&:where(.dark, .dark *));
 
 /* Variables CSS dynamiques selon le thème */
 :root {
