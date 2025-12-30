@@ -38,6 +38,12 @@ import {
   emitConversionError,
   emitConversionStopped 
 } from './src/services/websocketService.js';
+import {
+  saveConversionState,
+  loadConversionState,
+  clearConversionState,
+  prepareResumeState,
+} from './src/services/stateService.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -443,6 +449,10 @@ async function startConversion(config) {
         progressItem.message = `Conversion VTS_${vtsNum}: ${progress}%`;
         // Émettre la progression en temps réel via WebSocket
         emitConversionProgress(currentConversion);
+        // Sauvegarder l'état périodiquement (tous les 10%)
+        if (progress % 10 === 0) {
+          saveConversionState(currentConversion);
+        }
       }, expectedDuration);
 
       // Vérifier le résultat
@@ -460,6 +470,8 @@ async function startConversion(config) {
         
         addLog(`OK`, `VTS_${vtsNum}: ${formatDuration(actualDuration)}, ${formatBytes(fileSize)}, ${bitrate} Mbps`);
         success++;
+        // Sauvegarder l'état après chaque succès
+        saveConversionState(currentConversion);
       } else {
         throw new Error('Fichier de sortie non créé');
       }
@@ -468,6 +480,8 @@ async function startConversion(config) {
       progressItem.message = `Erreur VTS_${vtsNum}: ${error.message}`;
       addLog(`ERROR`, `VTS_${vtsNum}: ${error.message}`);
       failed++;
+      // Sauvegarder l'état après chaque erreur
+      saveConversionState(currentConversion);
     }
   }
 
@@ -477,6 +491,9 @@ async function startConversion(config) {
   
   // Émettre l'événement de complétion via WebSocket
   emitConversionComplete(currentConversion);
+  
+  // Supprimer l'état sauvegardé car la conversion est terminée
+  clearConversionState();
 }
 
 // Convertir un VTS
@@ -614,6 +631,92 @@ function addLog(level, message) {
   }
 }
 
+// Récupérer l'état sauvegardé pour reprise
+app.get('/api/resume/state', (req, res) => {
+  try {
+    const savedState = loadConversionState();
+    if (!savedState) {
+      return res.json({ hasState: false });
+    }
+    
+    // Préparer l'état pour la reprise
+    const resumeState = prepareResumeState(savedState, savedState.outputDir);
+    
+    // Compter les VTS à reprendre vs déjà complétés
+    const totalVTS = resumeState.progress.length;
+    const completedVTS = resumeState.progress.filter(p => p.status === 'success').length;
+    const remainingVTS = totalVTS - completedVTS;
+    
+    res.json({
+      hasState: true,
+      state: resumeState,
+      stats: {
+        total: totalVTS,
+        completed: completedVTS,
+        remaining: remainingVTS,
+      },
+    });
+  } catch (error) {
+    console.error('Erreur récupération état:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Supprimer l'état sauvegardé (refuser la reprise)
+app.delete('/api/resume/state', (req, res) => {
+  try {
+    clearConversionState();
+    res.json({ success: true, message: 'État supprimé' });
+  } catch (error) {
+    console.error('Erreur suppression état:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Reprendre une conversion
+app.post('/api/resume', async (req, res) => {
+  try {
+    // Vérifier qu'il n'y a pas déjà une conversion en cours
+    if (conversionLock || currentConversion) {
+      return res.status(400).json({ error: 'Une conversion est déjà en cours' });
+    }
+    
+    // Charger l'état sauvegardé
+    const savedState = loadConversionState();
+    if (!savedState) {
+      return res.status(404).json({ error: 'Aucun état de conversion à reprendre' });
+    }
+    
+    // Préparer l'état pour la reprise
+    const resumeState = prepareResumeState(savedState, savedState.outputDir);
+    
+    // Acquérir le lock
+    conversionLock = true;
+    
+    // Initialiser la conversion avec l'état repris
+    currentConversion = resumeState;
+    currentConversion.startTime = new Date(); // Nouvelle heure de départ
+    
+    // Démarrer la conversion en arrière-plan
+    startConversion(currentConversion);
+    
+    // Libérer le lock après initialisation
+    conversionLock = false;
+    
+    // Supprimer l'état sauvegardé (il sera recréé pendant la conversion)
+    clearConversionState();
+    
+    res.json({ 
+      message: 'Conversion reprise avec succès', 
+      conversion: currentConversion,
+    });
+  } catch (error) {
+    conversionLock = false;
+    console.error('Erreur reprise conversion:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Obtenir le statut de la conversion
 app.get('/api/status', (req, res) => {
   if (!currentConversion) {
@@ -661,6 +764,9 @@ app.post('/api/stop', (req, res) => {
     currentConversion.status = 'stopped';
     currentConversion.endTime = new Date();
     addLog('INFO', 'Conversion arrêtée par l\'utilisateur');
+    
+    // Sauvegarder l'état pour permettre la reprise
+    saveConversionState(currentConversion);
     
     // Émettre l'événement d'arrêt via WebSocket
     emitConversionStopped(currentConversion);
