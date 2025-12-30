@@ -441,6 +441,39 @@ Les contributions sont les bienvenues ! Voici comment contribuer :
 
 ---
 
+## 💖 Soutenir le Projet
+
+Ce projet est développé avec passion et maintenu activement. Si vous trouvez **DVD Ripper** utile, vous pouvez soutenir son développement :
+
+<div align="center">
+
+### ☕ Offrez-moi un café
+
+[![Sponsor](https://img.shields.io/badge/Sponsor-💖-ff69b4?style=for-the-badge&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/julien-lin)
+
+**[Devenir Sponsor sur GitHub](https://github.com/sponsors/julien-lin)**
+
+Votre soutien aide à :
+- ✨ Ajouter de nouvelles fonctionnalités
+- 🐛 Corriger les bugs rapidement
+- 📚 Améliorer la documentation
+- 🚀 Maintenir le projet activement
+- 💡 Innover et expérimenter
+
+### Autres Moyens de Soutenir
+
+- ⭐ **Star** le projet sur GitHub
+- 🐛 **Reporter** des bugs et suggérer des améliorations
+- 🔀 **Contribuer** avec du code ou de la documentation
+- 📢 **Partager** le projet avec d'autres développeurs
+- 💬 **Rejoindre** la communauté et aider les autres utilisateurs
+
+</div>
+
+**Merci à tous les sponsors ! 🙏**
+
+---
+
 ## 📊 Roadmap
 
 ### Version Actuelle : 2.5.0 (Enterprise-Grade)
@@ -467,11 +500,12 @@ Ce projet est sous licence **MIT**. Voir le fichier [LICENSE](LICENSE) pour plus
 
 ## 👨‍💻 Auteur
 
-**Julien** - Développeur passionné
+**Julien Linard** - Développeur passionné
 
+- 💻 GitHub : [@julien-lin](https://github.com/julien-lin)
+- 💖 Sponsor : [GitHub Sponsors](https://github.com/sponsors/julien-lin)
 - 🌐 Portfolio : (à définir)
 - 📧 Email : (à définir)
-- 💼 LinkedIn : (à définir)
 
 ---
 
@@ -500,7 +534,15 @@ Ce projet est sous licence **MIT**. Voir le fichier [LICENSE](LICENSE) pour plus
 
 **Fait avec ❤️ et beaucoup de ☕**
 
-Si ce projet vous aide, n'oubliez pas de lui donner une ⭐ !
+---
+
+### Ce projet vous aide ? Montrez votre soutien ! 🌟
+
+⭐ **[Star le projet](https://github.com/julien-lin/dvd-ripper-nodejs)**  
+💖 **[Devenir Sponsor](https://github.com/sponsors/julien-lin)**  
+🐛 **[Reporter un Bug](https://github.com/julien-lin/dvd-ripper-nodejs/issues)**
+
+---
 
 [⬆ Retour en haut](#-dvd-ripper---extracteur-dvd-vers-mp4)
 
