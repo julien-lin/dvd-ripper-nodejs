@@ -93,9 +93,9 @@ const ProgressPanel = ({ conversion, onStop }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Progression</h2>
+    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Progression</h2>
         {status === 'running' && (
           <button
             onClick={() => setShowStopConfirm(true)}
@@ -146,25 +146,25 @@ const ProgressPanel = ({ conversion, onStop }) => {
       )}
 
       {/* Statistiques globales */}
-      <div className="grid grid-cols-5 gap-3">
-        <div className="bg-blue-50 p-3 rounded-lg">
-          <div className="text-2xl font-bold text-blue-600">{progress.length}</div>
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
+        <div className="bg-blue-50 p-2 sm:p-3 rounded-lg">
+          <div className="text-xl sm:text-2xl font-bold text-blue-600">{progress.length}</div>
           <div className="text-xs text-gray-600">Total</div>
         </div>
-        <div className="bg-gray-50 p-3 rounded-lg">
-          <div className="text-2xl font-bold text-gray-600">{pendingCount}</div>
-          <div className="text-xs text-gray-600">En attente</div>
+        <div className="bg-gray-50 p-2 sm:p-3 rounded-lg">
+          <div className="text-xl sm:text-2xl font-bold text-gray-600">{pendingCount}</div>
+          <div className="text-xs text-gray-600">Attente</div>
         </div>
-        <div className="bg-yellow-50 p-3 rounded-lg">
-          <div className="text-2xl font-bold text-yellow-600">{processingCount}</div>
+        <div className="bg-yellow-50 p-2 sm:p-3 rounded-lg">
+          <div className="text-xl sm:text-2xl font-bold text-yellow-600">{processingCount}</div>
           <div className="text-xs text-gray-600">En cours</div>
         </div>
-        <div className="bg-green-50 p-3 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{successCount}</div>
+        <div className="bg-green-50 p-2 sm:p-3 rounded-lg">
+          <div className="text-xl sm:text-2xl font-bold text-green-600">{successCount}</div>
           <div className="text-xs text-gray-600">Succès</div>
         </div>
-        <div className="bg-red-50 p-3 rounded-lg">
-          <div className="text-2xl font-bold text-red-600">{errorCount}</div>
+        <div className="bg-red-50 p-2 sm:p-3 rounded-lg">
+          <div className="text-xl sm:text-2xl font-bold text-red-600">{errorCount}</div>
           <div className="text-xs text-gray-600">Erreurs</div>
         </div>
       </div>
@@ -186,12 +186,12 @@ const ProgressPanel = ({ conversion, onStop }) => {
       {/* Liste des conversions */}
       {progress.length > 0 && (
         <div className="space-y-3">
-          <h3 className="font-semibold text-gray-800">Détails par titre ({progress.length})</h3>
-          <div className="space-y-2 max-h-80 overflow-y-auto">
+          <h3 className="text-sm sm:text-base font-semibold text-gray-800">Détails par titre ({progress.length})</h3>
+          <div className="space-y-2 max-h-60 sm:max-h-80 overflow-y-auto">
             {progress.map((item, index) => (
               <div 
                 key={index} 
-                className={`border rounded-lg p-3 transition-all ${
+                className={`border rounded-lg p-2 sm:p-3 transition-all ${
                   item.status === 'processing' ? 'border-blue-300 bg-blue-50 shadow-sm' : 
                   item.status === 'pending' ? 'border-gray-200 bg-gray-50' :
                   item.status === 'success' ? 'border-green-200 bg-green-50' :
