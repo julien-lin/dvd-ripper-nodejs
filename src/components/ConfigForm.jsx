@@ -111,41 +111,61 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
             <div className="flex gap-2 text-sm">
               <button
                 onClick={selectAll}
-                className="flex-1 sm:flex-none px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                disabled={isConverting}
+                className="flex-1 sm:flex-none px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm hover:shadow"
+                disabled={isConverting || selectedVts.length === vtsList.length}
+                title="Sélectionner tous les titres VTS"
               >
-                Tout sélectionner
+                ✓ Tout sélectionner
               </button>
               <button
                 onClick={deselectAll}
-                className="flex-1 sm:flex-none px-3 py-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 hover:bg-gray-50 rounded"
-                disabled={isConverting}
+                className="flex-1 sm:flex-none px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
+                disabled={isConverting || selectedVts.length === 0}
+                title="Désélectionner tous les titres VTS"
               >
-                Tout désélectionner
+                ✗ Tout désélectionner
               </button>
             </div>
           </div>
-          <div className="max-h-48 overflow-y-auto space-y-2">
+          <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
             {vtsList.map((vts) => (
               <label
                 key={vts.vts}
-                className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                className={`
+                  flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-200
+                  ${selectedVts.includes(vts.vts) 
+                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700' 
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }
+                  ${isConverting ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
               >
                 <input
                   type="checkbox"
                   checked={selectedVts.includes(vts.vts)}
                   onChange={() => toggleVts(vts.vts)}
                   disabled={isConverting}
-                  className="mr-3 w-4 h-4 text-blue-600"
+                  className="mr-3 w-5 h-5 text-blue-600 dark:text-blue-500 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-0 transition-colors cursor-pointer"
+                  aria-label={`Sélectionner VTS ${vts.vts}`}
                 />
-                <div className="flex-1">
-                  <div className="font-medium text-gray-800 dark:text-gray-100">
-                    VTS_{vts.vts} ({vts.files} fichier{vts.files > 1 ? 's' : ''})
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <span>VTS_{vts.vts}</span>
+                    <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
+                      {vts.files} fichier{vts.files > 1 ? 's' : ''}
+                    </span>
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Durée: {vts.durationFormatted || 'N/A'}
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-2">
+                    <span className="inline-flex items-center">
+                      ⏱️ {vts.durationFormatted || 'N/A'}
+                    </span>
                   </div>
                 </div>
+                {selectedVts.includes(vts.vts) && (
+                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 ml-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
               </label>
             ))}
           </div>
