@@ -162,7 +162,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
           <select
             value={config.videoPreset}
             onChange={(e) => setConfig({ ...config, videoPreset: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
             disabled={isConverting}
           >
             <option value="slow">Slow (qualité optimale, lent)</option>
@@ -198,7 +198,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
           <select
             value={config.audioBitrate}
             onChange={(e) => setConfig({ ...config, audioBitrate: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
             disabled={isConverting}
           >
             <option value="128k">128 kbps</option>

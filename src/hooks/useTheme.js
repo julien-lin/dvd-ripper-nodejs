@@ -22,20 +22,30 @@ export function useTheme() {
     return 'light';
   };
 
-  const [theme, setTheme] = useState(getInitialTheme);
+  const [theme, setTheme] = useState(getInitialTheme());
+  
+  // Debug: afficher les changements de thème
+  useEffect(() => {
+    console.log('🎨 Thème actuel:', theme);
+  }, [theme]);
 
   // Appliquer le thème au chargement et à chaque changement
   useEffect(() => {
     const root = document.documentElement;
     
+    console.log('🔄 Application du thème:', theme);
+    
     if (theme === 'dark') {
       root.classList.add('dark');
+      console.log('✅ Classe dark ajoutée à <html>');
     } else {
       root.classList.remove('dark');
+      console.log('❌ Classe dark retirée de <html>');
     }
     
     // Sauvegarder dans localStorage
     localStorage.setItem('theme', theme);
+    console.log('💾 Thème sauvegardé:', theme);
   }, [theme]);
 
   // Écouter les changements de préférence système
