@@ -6,6 +6,7 @@ import ResultsPanel from './components/ResultsPanel';
 import ResumeModal from './components/ResumeModal';
 import NotificationSettings from './components/NotificationSettings';
 import ThemeToggle from './components/ThemeToggle';
+import SkipLink from './components/SkipLink';
 import { POLLING_INTERVAL, debugLog } from './config';
 import dvdApi, { ApiError } from './api/client';
 import { useToast } from './components/common/ToastContainer';
@@ -234,6 +235,9 @@ function App() {
 
   return (
     <>
+      {/* Skip Link pour accessibilité */}
+      <SkipLink />
+      
       {/* Modal de reprise de conversion */}
       {showResumeModal && backendAvailable && (
         <ResumeModal
@@ -344,7 +348,12 @@ function App() {
       )}
 
       {/* Contenu principal */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+      <main 
+        id="main-content" 
+        tabIndex="-1"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6"
+        aria-label="Contenu principal de l'application"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Configuration */}
           <div>
