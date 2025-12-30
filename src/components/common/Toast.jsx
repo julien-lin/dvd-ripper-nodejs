@@ -38,7 +38,7 @@ const Toast = ({ message, type = 'info', onClose, duration = 5000 }) => {
       role="alert"
     >
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-white bg-opacity-20 rounded-full text-lg font-bold">
+        <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-white dark:bg-gray-800 bg-opacity-20 rounded-full text-lg font-bold">
           {icons[type]}
         </div>
         <div className="flex-1">
