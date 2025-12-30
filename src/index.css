@@ -130,8 +130,7 @@
   border-width: 0;
 }
 
-/* SR-only mais visible au focus (pour skip links) */
-.sr-only-focusable:focus {
+.sr-only:focus {
   position: static;
   width: auto;
   height: auto;
@@ -160,7 +159,15 @@
 
 /* Skip to main content link */
 .skip-link {
-  @apply sr-only-focusable fixed top-0 left-0 z-50 bg-blue-600 text-white px-4 py-2 rounded-br-lg font-semibold;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-bottom-right-radius: 0.5rem;
+  font-weight: 600;
   transform: translateY(-100%);
   transition: transform 0.2s ease;
 }
@@ -171,7 +178,15 @@
 
 /* Région live pour annonces aux lecteurs d'écran */
 #a11y-live-region {
-  @apply sr-only;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* Indicateur de chargement accessible */
@@ -181,7 +196,15 @@
 
 .loading-spinner[aria-busy="true"]::after {
   content: "Chargement en cours";
-  @apply sr-only;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* Améliorer les boutons disabled */
