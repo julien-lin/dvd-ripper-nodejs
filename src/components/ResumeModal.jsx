@@ -16,13 +16,15 @@ const ResumeModal = ({ onResume, onDecline }) => {
       const response = await dvdApi.getResumeState();
       
       if (response.hasSavedState) {
+        // progress est un array d'items [{vts, status, progress, message, startTime}, ...]
+        const progressArray = response.state.progress || [];
         setResumeData({
           hasState: true,
           state: response.state,
           stats: {
-            total: response.state.progress?.details?.length || 0,
-            completed: response.state.progress?.details?.filter(d => d.status === 'success').length || 0,
-            remaining: response.state.progress?.details?.filter(d => d.status !== 'success').length || 0,
+            total: progressArray.length,
+            completed: progressArray.filter(d => d.status === 'success').length,
+            remaining: progressArray.filter(d => d.status !== 'success').length,
           }
         });
       } else {
@@ -135,10 +137,10 @@ const ResumeModal = ({ onResume, onDecline }) => {
 
           {/* Informations */}
           <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-            {state.config?.dvdPath && (
+            {state.dvdPath && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Chemin DVD:</span>
-                <span className="font-medium text-gray-800 truncate ml-2">{state.config.dvdPath}</span>
+                <span className="font-medium text-gray-800 truncate ml-2">{state.dvdPath}</span>
               </div>
             )}
             {state.outputDir && (
@@ -147,20 +149,20 @@ const ResumeModal = ({ onResume, onDecline }) => {
                 <span className="font-medium text-gray-800 truncate ml-2">{state.outputDir}</span>
               </div>
             )}
-            {state.config?.videoPreset && (
+            {state.videoPreset && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Preset:</span>
-                <span className="font-medium text-gray-800">{state.config.videoPreset}</span>
+                <span className="font-medium text-gray-800">{state.videoPreset}</span>
               </div>
             )}
           </div>
 
           {/* Détails des VTS */}
-          {state.progress?.details && state.progress.details.length > 0 && (
+          {state.progress && state.progress.length > 0 && (
             <div className="border-t pt-4">
               <h3 className="font-semibold text-gray-800 mb-3">Détails par titre</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
-                {state.progress.details.map((item, index) => (
+                {state.progress.map((item, index) => (
                   <div
                     key={index}
                     className={`flex items-center justify-between p-3 rounded-lg ${
@@ -173,7 +175,7 @@ const ResumeModal = ({ onResume, onDecline }) => {
                       <span className="text-xl">
                         {item.status === 'success' ? '✓' : '⏳'}
                       </span>
-                      <span className="font-medium text-gray-800">{item.title}</span>
+                      <span className="font-medium text-gray-800">VTS_{item.vts}</span>
                     </div>
                     <span className={`text-sm ${
                       item.status === 'success' ? 'text-green-600' : 'text-gray-600'
