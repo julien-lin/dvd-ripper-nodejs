@@ -5,6 +5,7 @@ import ProgressPanel from './components/ProgressPanel';
 import ResultsPanel from './components/ResultsPanel';
 import ResumeModal from './components/ResumeModal';
 import NotificationSettings from './components/NotificationSettings';
+import { ConversionHistory } from './components/ConversionHistory';
 import ThemeToggle from './components/ThemeToggle';
 import SkipLink from './components/SkipLink';
 import { POLLING_INTERVAL, debugLog } from './config';
@@ -40,6 +41,7 @@ function App() {
   const dispatch = useDispatch();
   const [usePolling, setUsePolling] = useState(false); // Fallback sur polling si WebSocket échoue
   const [showResumeModal, setShowResumeModal] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   
   // Selectors Redux
   const dependencies = useSelector(selectDependencies);
@@ -260,6 +262,13 @@ function App() {
             </div>
             {backendAvailable && (
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowHistory(true)}
+                  className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors duration-200 font-medium text-sm flex items-center gap-2"
+                  title="Voir l'historique des conversions"
+                >
+                  📊 Historique
+                </button>
                 <ThemeToggle />
                 <NotificationSettings />
               </div>
@@ -387,6 +396,12 @@ function App() {
         </div>
       </footer>
     </div>
+
+    {/* Modal Historique */}
+    <ConversionHistory 
+      isOpen={showHistory}
+      onClose={() => setShowHistory(false)}
+    />
     </>
   );
 }
