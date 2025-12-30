@@ -3,6 +3,7 @@ import FolderPicker from './FolderPicker';
 import { useToast } from './common/ToastContainer';
 import { SkeletonList } from './Skeleton';
 import { usePersistedConfig } from '../hooks/usePersistedConfig';
+import { VtsThumbnail } from './VtsThumbnail';
 
 const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
   const toast = useToast();
@@ -145,17 +146,22 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
                   checked={selectedVts.includes(vts.vts)}
                   onChange={() => toggleVts(vts.vts)}
                   disabled={isConverting}
-                  className="mr-3 w-5 h-5 text-blue-600 dark:text-blue-500 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-0 transition-colors cursor-pointer"
+                  className="mr-3 w-5 h-5 text-blue-600 dark:text-blue-500 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-0 transition-colors cursor-pointer flex-shrink-0"
                   aria-label={`Sélectionner VTS ${vts.vts}`}
                 />
+                <VtsThumbnail 
+                  vts={vts.vts} 
+                  dvdPath={config.dvdPath}
+                  className="w-24 h-16 flex-shrink-0 mr-3"
+                />
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <div className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 flex-wrap">
                     <span>VTS_{vts.vts}</span>
                     <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
                       {vts.files} fichier{vts.files > 1 ? 's' : ''}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-2">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-2 flex-wrap">
                     <span className="inline-flex items-center">
                       ⏱️ {vts.durationFormatted || 'N/A'}
                     </span>
