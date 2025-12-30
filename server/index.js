@@ -673,6 +673,34 @@ app.delete('/api/resume/state', (req, res) => {
   }
 });
 
+// Alias pour le frontend (format kebab-case)
+app.get('/api/resume-state', (req, res) => {
+  try {
+    const savedState = loadConversionState();
+    if (!savedState) {
+      return res.json({ hasSavedState: false });
+    }
+    
+    res.json({
+      hasSavedState: true,
+      state: savedState,
+    });
+  } catch (error) {
+    console.error('Erreur récupération état:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/clear-resume-state', (req, res) => {
+  try {
+    clearConversionState();
+    res.json({ success: true, message: 'État de reprise effacé.' });
+  } catch (error) {
+    console.error('Erreur suppression état:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Reprendre une conversion
 app.post('/api/resume', async (req, res) => {
   try {
