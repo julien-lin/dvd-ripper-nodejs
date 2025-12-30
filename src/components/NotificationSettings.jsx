@@ -49,7 +49,7 @@ const NotificationSettings = () => {
       {/* Bouton icône */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors relative"
+        className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 hover:bg-gray-100 rounded-lg transition-colors relative"
         title="Paramètres de notifications"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +70,7 @@ const NotificationSettings = () => {
           />
           
           {/* Panel */}
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-20 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 z-20 overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white">
               <h3 className="font-semibold text-lg flex items-center gap-2">
@@ -84,8 +84,8 @@ const NotificationSettings = () => {
               {/* Toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="font-medium text-gray-800">Activer les notifications</div>
-                  <div className="text-sm text-gray-600">
+                  <div className="font-medium text-gray-800 dark:text-gray-100">Activer les notifications</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     Recevoir des alertes de fin de conversion
                   </div>
                 </div>
@@ -123,7 +123,7 @@ const NotificationSettings = () => {
                   </div>
                 )}
                 {permission === 'default' && !enabled && (
-                  <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 p-2 rounded">
                     Cliquez sur le bouton ci-dessus pour activer
                   </div>
                 )}
@@ -133,7 +133,7 @@ const NotificationSettings = () => {
               {enabled && permission === 'granted' && (
                 <div className="border-t pt-4">
                   <div className="text-sm font-medium text-gray-700 mb-2">Fonctionnalités</div>
-                  <ul className="space-y-2 text-sm text-gray-600">
+                  <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <li className="flex items-center gap-2">
                       <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />

@@ -62,10 +62,10 @@ const ResumeModal = ({ onResume, onDecline }) => {
   if (loading && !resumeData) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
           <div className="text-center">
             <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Vérification d'une conversion en cours...</p>
+            <p className="text-gray-600 dark:text-gray-400">Vérification d'une conversion en cours...</p>
           </div>
         </div>
       </div>
@@ -75,11 +75,11 @@ const ResumeModal = ({ onResume, onDecline }) => {
   if (error) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
           <div className="text-center">
             <div className="text-red-600 text-5xl mb-4">⚠️</div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Erreur</h3>
-            <p className="text-gray-600 mb-4">{error}</p>
+            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">Erreur</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
             <button
               onClick={onDecline}
               className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
@@ -103,7 +103,7 @@ const ResumeModal = ({ onResume, onDecline }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
           <div className="flex items-center gap-3 mb-2">
@@ -123,15 +123,15 @@ const ResumeModal = ({ onResume, onDecline }) => {
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg text-center">
               <div className="text-3xl font-bold text-blue-600">{stats.total}</div>
-              <div className="text-sm text-gray-600">Total VTS</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total VTS</div>
             </div>
             <div className="bg-green-50 p-4 rounded-lg text-center">
               <div className="text-3xl font-bold text-green-600">{stats.completed}</div>
-              <div className="text-sm text-gray-600">Déjà convertis</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Déjà convertis</div>
             </div>
             <div className="bg-orange-50 p-4 rounded-lg text-center">
               <div className="text-3xl font-bold text-orange-600">{stats.remaining}</div>
-              <div className="text-sm text-gray-600">Restants</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Restants</div>
             </div>
           </div>
 
@@ -139,20 +139,20 @@ const ResumeModal = ({ onResume, onDecline }) => {
           <div className="bg-gray-50 p-4 rounded-lg space-y-2">
             {state.dvdPath && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Chemin DVD:</span>
-                <span className="font-medium text-gray-800 truncate ml-2">{state.dvdPath}</span>
+                <span className="text-gray-600 dark:text-gray-400">Chemin DVD:</span>
+                <span className="font-medium text-gray-800 dark:text-gray-100 truncate ml-2">{state.dvdPath}</span>
               </div>
             )}
             {state.outputDir && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Dossier de sortie:</span>
-                <span className="font-medium text-gray-800 truncate ml-2">{state.outputDir}</span>
+                <span className="text-gray-600 dark:text-gray-400">Dossier de sortie:</span>
+                <span className="font-medium text-gray-800 dark:text-gray-100 truncate ml-2">{state.outputDir}</span>
               </div>
             )}
             {state.videoPreset && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Preset:</span>
-                <span className="font-medium text-gray-800">{state.videoPreset}</span>
+                <span className="text-gray-600 dark:text-gray-400">Preset:</span>
+                <span className="font-medium text-gray-800 dark:text-gray-100">{state.videoPreset}</span>
               </div>
             )}
           </div>
@@ -160,7 +160,7 @@ const ResumeModal = ({ onResume, onDecline }) => {
           {/* Détails des VTS */}
           {state.progress && state.progress.length > 0 && (
             <div className="border-t pt-4">
-              <h3 className="font-semibold text-gray-800 mb-3">Détails par titre</h3>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">Détails par titre</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {state.progress.map((item, index) => (
                   <div
@@ -175,7 +175,7 @@ const ResumeModal = ({ onResume, onDecline }) => {
                       <span className="text-xl">
                         {item.status === 'success' ? '✓' : '⏳'}
                       </span>
-                      <span className="font-medium text-gray-800">VTS_{item.vts}</span>
+                      <span className="font-medium text-gray-800 dark:text-gray-100">VTS_{item.vts}</span>
                     </div>
                     <span className={`text-sm ${
                       item.status === 'success' ? 'text-green-600' : 'text-gray-600'

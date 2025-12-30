@@ -5,6 +5,7 @@ import ProgressPanel from './components/ProgressPanel';
 import ResultsPanel from './components/ResultsPanel';
 import ResumeModal from './components/ResumeModal';
 import NotificationSettings from './components/NotificationSettings';
+import ThemeToggle from './components/ThemeToggle';
 import { POLLING_INTERVAL, debugLog } from './config';
 import dvdApi, { ApiError } from './api/client';
 import { useToast } from './components/common/ToastContainer';
@@ -240,20 +241,25 @@ function App() {
           onDecline={handleDeclineResume}
         />
       )}
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 theme-transition">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 theme-transition">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-gray-100">
                 🎬 Extracteur DVD vers MP4
               </h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
                 Interface conviviale pour convertir vos DVD en fichiers MP4
               </p>
             </div>
-            {backendAvailable && <NotificationSettings />}
+            {backendAvailable && (
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <NotificationSettings />
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -261,23 +267,23 @@ function App() {
       {/* Avertissement backend non disponible */}
       {!backendAvailable && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 theme-transition">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex-1">
-                <div className="font-semibold text-red-800 mb-2">⚠️ Backend non disponible</div>
-                <div className="text-sm text-red-700">
+                <div className="font-semibold text-red-800 dark:text-red-300 mb-2">⚠️ Backend non disponible</div>
+                <div className="text-sm text-red-700 dark:text-red-400">
                   Le serveur backend n'est pas démarré ou n'est pas accessible sur le port 3001.
                 </div>
-                <div className="text-sm text-red-600 mt-2">
+                <div className="text-sm text-red-600 dark:text-red-400 mt-2">
                   Pour démarrer le backend, exécutez dans un terminal :
                 </div>
-                <code className="block mt-2 bg-red-100 px-3 py-2 rounded text-xs sm:text-sm overflow-x-auto">
+                <code className="block mt-2 bg-red-100 dark:bg-red-900/30 px-3 py-2 rounded text-xs sm:text-sm overflow-x-auto text-red-800 dark:text-red-300">
                   cd server && npm start
                 </code>
               </div>
               <button
                 onClick={checkDependencies}
-                className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 whitespace-nowrap"
+                className="w-full sm:w-auto px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 whitespace-nowrap theme-transition"
               >
                 Réessayer
               </button>
@@ -289,14 +295,14 @@ function App() {
       {/* Status des dépendances */}
       {dependencies && backendAvailable && (
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className={`p-4 rounded-lg ${
+          <div className={`p-4 rounded-lg theme-transition ${
             dependencies.allInstalled 
-              ? 'bg-green-50 border border-green-200' 
-              : 'bg-yellow-50 border border-yellow-200'
+              ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+              : 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800'
           }`}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-semibold text-gray-800 mb-2">État des dépendances</div>
+                <div className="font-semibold text-gray-800 dark:text-gray-100 mb-2">État des dépendances</div>
                 <div className="text-sm space-y-1">
                   <div className={dependencies.ffmpeg ? 'text-green-600' : 'text-red-600'}>
                     {dependencies.ffmpeg ? '✓' : '✗'} ffmpeg {dependencies.embedded && dependencies.ffmpeg && '(embarqué)'}
@@ -310,26 +316,26 @@ function App() {
                 </div>
               </div>
               {!dependencies.allInstalled && (
-                <div className="text-sm text-yellow-800">
+                <div className="text-sm text-yellow-800 dark:text-yellow-300">
                   {!dependencies.bc && (
                     <>
                       Installez bc avec:<br />
-                      <code className="bg-yellow-100 px-2 py-1 rounded">
+                      <code className="bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded text-yellow-900 dark:text-yellow-200">
                         sudo apt install bc
                       </code>
                     </>
                   )}
                   {!dependencies.ffmpeg || !dependencies.ffprobe ? (
-                    <div className="mt-2 text-red-600">
+                    <div className="mt-2 text-red-600 dark:text-red-400">
                       ⚠ Erreur: Les binaires ffmpeg/ffprobe embarqués ne sont pas disponibles
                     </div>
                   ) : null}
                 </div>
               )}
               {dependencies.allInstalled && dependencies.embedded && (
-                <div className="text-sm text-green-700">
+                <div className="text-sm text-green-700 dark:text-green-300">
                   ✓ Toutes les dépendances sont disponibles<br />
-                  <span className="text-xs text-gray-600">ffmpeg et ffprobe sont embarqués dans l'application</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">ffmpeg et ffprobe sont embarqués dans l'application</span>
                 </div>
               )}
             </div>
@@ -366,9 +372,9 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-4 text-center text-sm text-gray-600">
-          Extracteur DVD - Version 2.0
+      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12 theme-transition">
+        <div className="max-w-7xl mx-auto px-4 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+          Extracteur DVD - Version 2.3 🌙
         </div>
       </footer>
     </div>

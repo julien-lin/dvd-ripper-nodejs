@@ -48,8 +48,8 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Configuration</h2>
+    <div className="bg-white dark:bg-gray-800 dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6 theme-transition">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 dark:text-gray-100">Configuration</h2>
 
       {/* Chemins */}
       <div className="space-y-4">
@@ -88,7 +88,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
       {vtsList.length > 0 && (
         <div className="border-t pt-4">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-3">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-800">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
               Titres disponibles ({vtsList.length})
             </h3>
             <div className="flex gap-2 text-sm">
@@ -101,7 +101,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
               </button>
               <button
                 onClick={deselectAll}
-                className="flex-1 sm:flex-none px-3 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded"
+                className="flex-1 sm:flex-none px-3 py-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 hover:bg-gray-50 rounded"
                 disabled={isConverting}
               >
                 Tout désélectionner
@@ -122,10 +122,10 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
                   className="mr-3 w-4 h-4 text-blue-600"
                 />
                 <div className="flex-1">
-                  <div className="font-medium text-gray-800">
+                  <div className="font-medium text-gray-800 dark:text-gray-100">
                     VTS_{vts.vts} ({vts.files} fichier{vts.files > 1 ? 's' : ''})
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     Durée: {vts.durationFormatted || 'N/A'}
                   </div>
                 </div>
@@ -142,7 +142,7 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
 
       {/* Paramètres de qualité */}
       <div className="border-t pt-4 space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800">Paramètres de qualité</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Paramètres de qualité</h3>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

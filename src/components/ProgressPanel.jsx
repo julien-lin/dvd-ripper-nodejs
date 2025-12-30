@@ -16,7 +16,7 @@ const ProgressPanel = ({ conversion, onStop }) => {
 
   if (!conversion) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6 text-center text-gray-500">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center text-gray-500">
         Aucune conversion en cours
       </div>
     );
@@ -93,9 +93,9 @@ const ProgressPanel = ({ conversion, onStop }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Progression</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">Progression</h2>
         {status === 'running' && (
           <button
             onClick={() => setShowStopConfirm(true)}
@@ -109,7 +109,7 @@ const ProgressPanel = ({ conversion, onStop }) => {
       {/* Modal de confirmation d'arrêt */}
       {showStopConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,10 +117,10 @@ const ProgressPanel = ({ conversion, onStop }) => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">Arrêter la conversion ?</h3>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Arrêter la conversion ?</h3>
               </div>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               Êtes-vous sûr de vouloir arrêter la conversion en cours ? 
               Les fichiers en cours d'encodage seront perdus.
             </p>
@@ -149,23 +149,23 @@ const ProgressPanel = ({ conversion, onStop }) => {
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
         <div className="bg-blue-50 p-2 sm:p-3 rounded-lg">
           <div className="text-xl sm:text-2xl font-bold text-blue-600">{progress.length}</div>
-          <div className="text-xs text-gray-600">Total</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">Total</div>
         </div>
         <div className="bg-gray-50 p-2 sm:p-3 rounded-lg">
-          <div className="text-xl sm:text-2xl font-bold text-gray-600">{pendingCount}</div>
-          <div className="text-xs text-gray-600">Attente</div>
+          <div className="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-400">{pendingCount}</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">Attente</div>
         </div>
         <div className="bg-yellow-50 p-2 sm:p-3 rounded-lg">
           <div className="text-xl sm:text-2xl font-bold text-yellow-600">{processingCount}</div>
-          <div className="text-xs text-gray-600">En cours</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">En cours</div>
         </div>
         <div className="bg-green-50 p-2 sm:p-3 rounded-lg">
           <div className="text-xl sm:text-2xl font-bold text-green-600">{successCount}</div>
-          <div className="text-xs text-gray-600">Succès</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">Succès</div>
         </div>
         <div className="bg-red-50 p-2 sm:p-3 rounded-lg">
           <div className="text-xl sm:text-2xl font-bold text-red-600">{errorCount}</div>
-          <div className="text-xs text-gray-600">Erreurs</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">Erreurs</div>
         </div>
       </div>
 
@@ -173,7 +173,7 @@ const ProgressPanel = ({ conversion, onStop }) => {
       <div>
         <div className="flex justify-between mb-2">
           <span className="text-sm font-medium text-gray-700">Progression globale</span>
-          <span className="text-sm text-gray-600">{Math.round(totalProgress)}%</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">{Math.round(totalProgress)}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div
@@ -186,7 +186,7 @@ const ProgressPanel = ({ conversion, onStop }) => {
       {/* Liste des conversions */}
       {progress.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm sm:text-base font-semibold text-gray-800">Détails par titre ({progress.length})</h3>
+          <h3 className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-100">Détails par titre ({progress.length})</h3>
           <div className="space-y-2 max-h-60 sm:max-h-80 overflow-y-auto">
             {progress.map((item, index) => (
               <div 
@@ -203,7 +203,7 @@ const ProgressPanel = ({ conversion, onStop }) => {
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{getStatusIcon(item.status)}</span>
                     <div>
-                      <span className="font-medium text-gray-800">VTS_{item.vts}</span>
+                      <span className="font-medium text-gray-800 dark:text-gray-100">VTS_{item.vts}</span>
                       <div className="text-xs text-gray-500">{item.message}</div>
                     </div>
                   </div>
@@ -220,14 +220,14 @@ const ProgressPanel = ({ conversion, onStop }) => {
                         style={{ width: `${Math.min(100, Math.max(0, item.progress || 0))}%` }}
                       />
                     </div>
-                    <div className="text-xs text-gray-600 font-medium">
+                    <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
                       {Math.min(100, Math.max(0, item.progress || 0))}%
                     </div>
                   </div>
                 )}
                 
                 {item.status === 'success' && (
-                  <div className="text-sm text-gray-600 mt-2 flex gap-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 flex gap-4">
                     {item.duration && (
                       <span>⏱ {formatDuration(item.duration)}</span>
                     )}
@@ -251,8 +251,8 @@ const ProgressPanel = ({ conversion, onStop }) => {
       {/* Logs */}
       <div className="border-t pt-4">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="font-semibold text-gray-800">Logs</h3>
-          <label className="flex items-center text-sm text-gray-600">
+          <h3 className="font-semibold text-gray-800 dark:text-gray-100">Logs</h3>
+          <label className="flex items-center text-sm text-gray-600 dark:text-gray-400">
             <input
               type="checkbox"
               checked={autoScroll}

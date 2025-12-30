@@ -90,10 +90,10 @@ const FolderPicker = ({ value, onChange, label, placeholder, disabled }) => {
       {/* Modal de sélection */}
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col">
             {/* Header */}
             <div className="p-3 sm:p-4 border-b flex items-center justify-between">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-800">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
                 Sélectionner un dossier
               </h3>
               <button
@@ -142,7 +142,7 @@ const FolderPicker = ({ value, onChange, label, placeholder, disabled }) => {
                   Aller
                 </button>
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Chemin actuel: <span className="font-mono">{currentPath}</span>
               </div>
             </div>
@@ -219,7 +219,7 @@ const FolderPicker = ({ value, onChange, label, placeholder, disabled }) => {
                       <span className="text-xl">
                         {item.isDirectory ? '📁' : '📄'}
                       </span>
-                      <span className="flex-1 font-medium text-gray-800">
+                      <span className="flex-1 font-medium text-gray-800 dark:text-gray-100">
                         {item.name}
                       </span>
                       {item.isDirectory && (
@@ -233,7 +233,7 @@ const FolderPicker = ({ value, onChange, label, placeholder, disabled }) => {
 
             {/* Footer */}
             <div className="p-4 border-t bg-gray-50 flex justify-between items-center">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Dossier sélectionné: <span className="font-mono font-semibold">{value || 'Aucun'}</span>
               </div>
               <div className="flex gap-2">
