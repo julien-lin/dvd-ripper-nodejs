@@ -392,7 +392,7 @@ function App() {
       {/* Footer */}
       <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-          Extracteur DVD - Version 2.3 🌙
+          Extracteur DVD - Version 2.5 🚀
         </div>
       </footer>
     </div>
