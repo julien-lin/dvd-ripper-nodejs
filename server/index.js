@@ -44,6 +44,12 @@ import {
   clearConversionState,
   prepareResumeState,
 } from './src/services/stateService.js';
+import {
+  loadHistory,
+  addToHistory,
+  getHistoryStats,
+  clearHistory,
+} from './src/services/historyService.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -573,10 +579,27 @@ async function startConversion(config) {
 
   currentConversion.status = 'completed';
   currentConversion.endTime = new Date();
+  currentConversion.elapsedTime = Math.floor((currentConversion.endTime - currentConversion.startTime) / 1000);
+  
+  // Déterminer le statut final
+  if (failed === 0) {
+    currentConversion.finalStatus = 'success';
+  } else if (success > 0) {
+    currentConversion.finalStatus = 'partial';
+  } else {
+    currentConversion.finalStatus = 'error';
+  }
+  
   addLog(`INFO`, `Conversion terminée: ${success} succès, ${failed} échecs`);
   
   // Émettre l'événement de complétion via WebSocket
   emitConversionComplete(currentConversion);
+  
+  // Ajouter à l'historique
+  addToHistory({
+    ...currentConversion,
+    status: currentConversion.finalStatus,
+  });
   
   // Supprimer l'état sauvegardé car la conversion est terminée
   clearConversionState();
@@ -887,6 +910,43 @@ app.post('/api/stop', (req, res) => {
   }
   
   res.json({ message: 'Conversion arrêtée' });
+});
+
+// Récupérer l'historique des conversions
+app.get('/api/history', (req, res) => {
+  try {
+    const history = loadHistory();
+    res.json({ history });
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'historique:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Récupérer les statistiques globales
+app.get('/api/history/stats', (req, res) => {
+  try {
+    const stats = getHistoryStats();
+    res.json({ stats });
+  } catch (error) {
+    console.error('Erreur lors du calcul des statistiques:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Supprimer l'historique
+app.delete('/api/history', (req, res) => {
+  try {
+    const success = clearHistory();
+    if (success) {
+      res.json({ message: 'Historique supprimé avec succès' });
+    } else {
+      res.status(500).json({ error: 'Échec de la suppression de l\'historique' });
+    }
+  } catch (error) {
+    console.error('Erreur lors de la suppression de l\'historique:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Analyser les résultats
