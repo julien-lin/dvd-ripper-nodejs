@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import FolderPicker from './FolderPicker';
 import { useToast } from './common/ToastContainer';
+import { SkeletonList } from './Skeleton';
 
 const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
   const toast = useToast();
@@ -83,6 +84,16 @@ const ConfigForm = ({ onStart, onScan, isScanning, isConverting }) => {
           <span>{isScanning ? 'Scan en cours...' : 'Scanner le DVD'}</span>
         </button>
       </div>
+
+      {/* Skeleton pendant le scan */}
+      {isScanning && (
+        <div className="border-t pt-4">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
+            Scan en cours...
+          </h3>
+          <SkeletonList items={3} />
+        </div>
+      )}
 
       {/* Liste des VTS */}
       {vtsList.length > 0 && (
